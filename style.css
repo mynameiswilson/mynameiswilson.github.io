@@ -1,0 +1,39 @@
+@import url('reset.css');
+@import url('http://fonts.googleapis.com/css?family=Lobster|Merriweather');
+@import url('/fonts/stylesheet.css');
+#wrap {
+	font: normal normal 14px/1.5em helvetica, sans-serif;
+	position: absolute;
+	right: 0;
+	left: 0;
+}
+
+.single { width: 13% }
+.third { width: 30.43% }
+.half { width: 47.82% }
+.twothirds { width: 65.21% }
+.full { width: 100% } 
+
+h1 {
+	font: normal normal 3em/1em "Lobster", helvetica, sans-serif;
+	padding: 					0 1em;
+}
+
+h2 {
+	font: normal normal 1.5em/1.5em "Merriweather";
+}
+
+h3 { font-weight: bold; } 
+
+#header { 
+	text-align: center;
+	color: 		white;
+	text-shadow:				1px 1px 1px #333333;
+	background: 				#CF0000;
+	border-bottom-left-radius: 	100%;
+	border-bottom-right-radius: 100%; 
+}
+
+#slices { padding: 0 4%; overflow: auto }
+.slice { float: left; margin-right: 4% }
+#slices div:last-child { margin-right: 0 }   

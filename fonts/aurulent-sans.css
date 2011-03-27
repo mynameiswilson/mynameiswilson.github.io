@@ -1,0 +1,15 @@
+@font-face {
+	font-family: 'AurulentSansRegular';
+	src: url('AurulentSans-Regular-webfont.eot');
+	src: local('☺'), url('AurulentSans-Regular-webfont.woff') format('woff'), url('AurulentSans-Regular-webfont.ttf') format('truetype'), url('AurulentSans-Regular-webfont.svg#webfontnBLuE5mt') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'AurulentSansBold';
+	src: url('AurulentSans-Bold-webfont.eot');
+	src: local('☺'), url('AurulentSans-Bold-webfont.woff') format('woff'), url('AurulentSans-Bold-webfont.ttf') format('truetype'), url('AurulentSans-Bold-webfont.svg#webfontesemOkSM') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
