@@ -24,7 +24,7 @@
         #monogram img { width: 100%; height: auto } 
         #about { width: 360px; padding: 0 0 0 0; margin: 0 50px 0 auto; }
         #backstretch {  } 
-        #switcher { position: absolute; bottom: 0; left: 0; z-index: 99 } 
+        #switcher { display:none; position: absolute; bottom: 0; left: 0; z-index: 99 } 
 	</style>
 
     <style>
@@ -67,7 +67,7 @@
 <script type="text/javascript">
 if (typeof console == "undefined") { var console = { log: function() {} } }
 var imgs = [
-{ img: "grover-large-1440.jpg", style: "#monogram { padding-left: 75px } #about { padding: 1em; background: rgba(0,0,0,0.1) } p { color: #fff; } a { color: #fff }" },
+{ img: "grover-large-1440.jpg", style: "#monogram { padding-left: 75px } #about { width: 420px; padding: 1em; background: rgba(0,0,0,0.1) } p { color: #fff; } a { color: #fff }" },
 { img: "ben-at-work.jpg", style: "#monogram { float:left; width: 175px; margin-left: 2em; background: #fff; padding-bottom: 75px } #about { float:left; padding-top: 50px; margin:0 0 0 2em; width: auto  } p { float:left; font-size: 14px; width: 175px; margin-top: 0; margin-right: 1em; color: #f0f0f0 } a { color: #ffffff; } a:hover { color: #f0f0f0; }  " },
 { img: "dirty-feet-large-1440.jpg", style: "#monogram { margin: 0 160px 0 auto }" },
 { img: "furly-provisioned-large-1440.jpg", style: "#monogram,#about { padding-left: 1em; padding-right: 1em; width: 150px;} #monogram { margin: 0 50px 0 auto; background: white } #about { border-bottom-left-radius: 1em; border-bottom-right-radius: 1em; background: white; padding-top: 1em; padding-bottom: 1em }   p { font-size: 12px; color: #3d3d3d } " },
