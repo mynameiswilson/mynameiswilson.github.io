@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Ben Wilson // Tumblr Code Test</title>
+        <meta charset="utf-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet"> 
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootswatch/3.0.0/simplex/bootstrap.min.css">
+        <link href='http://fonts.googleapis.com/css?family=Bangers' rel='stylesheet' type='text/css'>
+        <style type="text/css">
+            body>header { margin: 1em 0 } 
+            body>header h1 { font-family: "Bangers"; font-size: 6em }
+            body>header h3 { margin-top: -.75em }
+            img.ben { display: inline-block } 
+            #brief p { font-size: 1.25em }
+            section { margin-bottom: 1em } 
+            div.highlight {
+                max-height: 300px;
+                overflow: hidden;
+            }
+            .latest:after {
+                content: "Latest";
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                font-size: 12px;
+                font-weight: bold;
+                color: #bbb;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+        </style>
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <script src="respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+
+        <header>
+            <div class="container"> 
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2 text-center">
+                        <h1>Ben Wilson</h1>
+                        <h3>designer and developer of interactive things</h3>
+                        <h2 class="text-center">Tumblr Code Test</h2>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <section id="codetest">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+                        <div class="row">
+                        <form class="col-md-6 col-md-offset-3" role="form">
+                            <div class="form-group" id="tumblr_name_group">
+                                <label class="sr-only" for="tumblr_name">Tumblr blog</label>
+                                <input type="email" class="form-control input-lg text-center" id="tumblr_name" placeholder="Enter the name of a tumblr blog" />
+                                <span class="help-block text-center"></span>
+                            </div>
+                        </form>
+                    </div>
+
+                        <div id="tumblr_content" style="display:none">
+                            <h1></h1>
+                            <h2></h2>
+                            <p>This <strong>tumblr</strong> was last updated <span class="last-updated"></span> and has <span class="num-posts"></span> posts.<p>
+
+                            <div class="posts_container">
+                                <ul class="pagination"></ul>
+                                <div class="posts row"></div>
+                                <ul class="pagination"></ul>
+                            </div> 
+                        </div>
+
+
+                    </div>
+                </div>
+            </div><!--/cont-->
+        </section>
+        <section id="contact">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+
+                        <h2 class="text-center">Contact</h2>
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <p><i class="icon-envelope-alt icon-2x"></i></p>
+                                <p><a href="mailto:ben@thelocust.org">ben@thelocust.org</a></p>
+                                <p><i class="icon-phone icon-2x"></i></p>
+                                <p><a href="tel:15028368551">1.502.836.8551</a></p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <p><i class="icon-twitter icon-2x"></i></p>
+                                <p><a href="https://twitter.com/power_ben">@Power_Ben</a> // <strong>Work</strong></p>
+                                <p><a href="https://twitter.com/mynameiswilson">@mynameiswilson</a> // <strong>Personal</strong></p>
+                                <p><a href="https://twitter.com/velolouisville">@velolouisville</a> // <strong>Bikes</strong></p>
+                                <p><i class="icon-stackexchange icon-2x"></i></p>
+                                <p><a href="http://stackoverflow.com/users/67457/ben">My StackOverflow profile</a></p>
+                            </div>
+
+                            <div class="col-md-4 text-center">
+                                <p><i class="icon-home icon-2x"></i></p>
+                                <p>25 Chamberry Circle<br/>Louisville, Kentucky 40207, USA</p>
+                            </div>
+                        </div>
+                        <p class="text-center">
+                            <i class="icon-4x icon-html5"></i>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+            var tumblr_api_key = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4';
+            var per_page = 10;
+            var cur_page = 1;
+
+            var tumblr_data;
+
+            var strings = {
+                tumblr_api_url: 'http://api.tumblr.com/v2/blog/{0}/posts?api_key={1}&limit={2}&offset={3}&filter=text&jsonp=?',
+                pagination_tick: '<li class="{0}"><a href="#">{1}</a></li>',
+                post_template: '<div class="col-md-{3}"><h2><a href="{0}">{1}</a></h2><p class="date">{2}</p></div>'
+
+            };
+
+            /* http://stackoverflow.com/a/1038930/67457 */
+            String.prototype.format = String.prototype.f = function() {
+                var s = this,
+                i = arguments.length;
+
+                while (i--) {
+                s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+                }
+                return s;
+            };
+
+            function draw_pagination() {
+                var $pager = $(".posts_container .pagination")
+                    .html("")
+                    .append( strings.pagination_tick.f( "prev " + (cur_page==1)?"disabled":"","&laquo;") );
+
+                for (var i=1;i<Math.ceil(tumblr_data.total_posts/10)+1;i++) {
+                    $pager.append( strings.pagination_tick.f( (cur_page==i)?"active":"",i) );
+                }
+
+                $pager.append( strings.pagination_tick.f("next","&raquo;") );
+
+            }
+            function display_tumblr_posts() {
+                console.log("fetching tumblr posts");
+                $posts = $(".posts_container .posts").html("");
+                for (var i=0;i<tumblr_data.posts.length;i++) {
+                    post = tumblr_data.posts[i];
+                    $posts.append( strings.post_template.f( post.post_url,(typeof post.caption == "undefined")?"<em>untitled</em>":post.caption,post.date, (i==0)?"12":"4" ) );
+                    if ( i==0 || i%3==0 ) {
+                        $posts.append('</div><!--/end row-->\n<div class="row">');
+                    }
+                }
+            }
+
+            function handle_tumblr_info(data,status) {
+                $('#tumblr_name_group').removeClass('has-error has-success');
+                if (data.hasOwnProperty("meta") && data.meta.hasOwnProperty("status") && data.meta.status == 404) {
+
+                    //alert user to failboat
+                    $('#tumblr_content').hide();
+                    $('#tumblr_name_group').addClass('has-error');
+                    $('#tumblr_name_group .help-block').html('tumblr blog not found!');
+
+                } else {
+
+                    //alert user to success
+                    $('#tumblr_name_group').addClass('has-success');
+                    $('#tumblr_name_group .help-block').html('found it!');
+
+                    if (data.hasOwnProperty("meta") && data.meta.hasOwnProperty("status") && data.meta.status == 200 ) {
+                        if (data.hasOwnProperty("response")) {
+                            tumblr_data = data.response;
+                            //save some meta data for latah
+                            var last_updated = new Date(tumblr_data.blog.updated * 1000);
+                            
+                            $('#tumblr_content h1').html( tumblr_data.blog.title );
+                            $('#tumblr_content h2').html( tumblr_data.blog.description );
+                            $('#tumblr_content .last-updated').html( last_updated );
+                            $('#tumblr_content .num-posts').html( tumblr_data.blog.posts );
+                            $('#tumblr_content').show();
+
+                            draw_pagination();
+                            display_tumblr_posts();
+                        } else {
+                            console.log('did not get response');
+                        }
+                    }
+                }
+            }
+
+            function fetch_tumblr_data() {
+
+                var name = $('#tumblr_name').val().replace(/\W/g, '')+'.tumblr.com';
+                var url = strings.tumblr_api_url.f(name,tumblr_api_key,per_page,(cur_page-1)*per_page);
+
+                var req = $.ajax({
+                            url : url,
+                            dataType : "jsonp",
+                            timeout : 10000,
+                            success : handle_tumblr_info,
+                            error : function() { console.log("FAIL!"); } 
+                    });
+
+            }
+
+function go_page(dir) {
+    console.log("going " + dir);
+                if ( cur_page + dir > 0 && cur_page + dir < Math.ceil(tumblr_data.total_posts/per_page) ) {
+                    cur_page += dir;
+                    fetch_tumblr_data();
+                }
+            }
+
+
+            $(document).ready(function() {
+                var keyup_timeout;
+                $('#tumblr_name').on("keyup",function(){ console.log("keyup"); clearTimeout(keyup_timeout); keyup_timeout = setTimeout(fetch_tumblr_data,500); });
+                $('#tumblr_name').on("change",fetch_tumblr_data);
+
+                $('.pagination').on("click",".prev a",function() { event.preventDefault(); go_page(-1) })
+                               .on("click",".next a", function() { event.preventDefault(); go_page(1) });
+            });
+        </script>
+        <script type="text/javascript">
+
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-82128-4']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+
+        </script>
+    </body>
+</html>
