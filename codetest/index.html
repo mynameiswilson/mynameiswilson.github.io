@@ -14,22 +14,17 @@
             img.ben { display: inline-block } 
             #brief p { font-size: 1.25em }
             section { margin-bottom: 1em } 
-            div.highlight {
-                max-height: 300px;
+            .posts h2 {
+                max-height: 3.25em;
                 overflow: hidden;
             }
-            .latest:after {
-                content: "Latest";
-                position: absolute;
-                top: 15px;
-                left: 15px;
-                font-size: 12px;
-                font-weight: bold;
-                color: #bbb;
-                text-transform: uppercase;
-                letter-spacing: 1px;
+            .pagination>li>a {
+                width: 3em;
+                text-align:center;
             }
-
+            .pagination>.active>a, .pagination>.active>span, .pagination>.active>a:hover, .pagination>.active>span:hover, .pagination>.active>a:focus, .pagination>.active>span:focus {
+                border-color: #d9230f;
+            }
         </style>
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -121,12 +116,12 @@
             var tumblr_api_key = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4';
             var per_page = 10;
             var cur_page = 1;
-
+            var total_pages = 0;
             var tumblr_data;
 
             var strings = {
                 tumblr_api_url: 'http://api.tumblr.com/v2/blog/{0}/posts?api_key={1}&limit={2}&offset={3}&filter=text&jsonp=?',
-                pagination_tick: '<li class="{0}"><a href="#">{1}</a></li>',
+                                pagination_tick: '<li class="{0}"><a data-page={1} href="#">{1}</a></li>',
                 post_template: '<div class="col-md-{3}"><h2><a href="{0}">{1}</a></h2><p class="date">{2}</p></div>'
 
             };
@@ -142,16 +137,29 @@
                 return s;
             };
 
+            /* the end of pagination? not yet... http://www.codinghorror.com/blog/2012/03/the-end-of-pagination.html */
             function draw_pagination() {
+                var pages_to_show_in_nav = 11;
+                var start_page = 1;
                 var $pager = $(".posts_container .pagination")
                     .html("")
-                    .append( strings.pagination_tick.f( "prev " + (cur_page==1)?"disabled":"","&laquo;") );
+                    .append( strings.pagination_tick.f( "prev " + (cur_page==1)?"disabled":"","&laquo;") )
+                    .append( strings.pagination_tick.f( "rwd " + (cur_page<=10)?"disabled":"","&laquo;&laquo;") );
 
-                for (var i=1;i<Math.ceil(tumblr_data.total_posts/10)+1;i++) {
-                    $pager.append( strings.pagination_tick.f( (cur_page==i)?"active":"",i) );
+                if (cur_page >= pages_to_show_in_nav/2) {
+                    start_page = cur_page+1-Math.ceil(pages_to_show_in_nav/2);
+                 
+                }
+                if (start_page + pages_to_show_in_nav > total_pages) {
+                    start_page = total_pages - pages_to_show_in_nav;
                 }
 
-                $pager.append( strings.pagination_tick.f("next","&raquo;") );
+                for (var i=start_page;i<start_page+pages_to_show_in_nav;i++) {
+                    $pager.append( strings.pagination_tick.f( "page " + ((cur_page==i)?"active":"") ,i) );
+                }
+
+                $pager.append( strings.pagination_tick.f("ffwd","&raquo;&raquo;") )
+                      .append( strings.pagination_tick.f("next","&raquo;") );
 
             }
             function display_tumblr_posts() {
@@ -184,6 +192,7 @@
                     if (data.hasOwnProperty("meta") && data.meta.hasOwnProperty("status") && data.meta.status == 200 ) {
                         if (data.hasOwnProperty("response")) {
                             tumblr_data = data.response;
+                            total_pages = Math.ceil(tumblr_data.total_posts/per_page);
                             //save some meta data for latah
                             var last_updated = new Date(tumblr_data.blog.updated * 1000);
                             
@@ -217,10 +226,9 @@
 
             }
 
-function go_page(dir) {
-    console.log("going " + dir);
-                if ( cur_page + dir > 0 && cur_page + dir < Math.ceil(tumblr_data.total_posts/per_page) ) {
-                    cur_page += dir;
+            function go_page(page) {
+                if ( page > 0 && page <= total_pages  ) {
+                    cur_page = page;
                     fetch_tumblr_data();
                 }
             }
@@ -231,8 +239,11 @@ function go_page(dir) {
                 $('#tumblr_name').on("keyup",function(){ console.log("keyup"); clearTimeout(keyup_timeout); keyup_timeout = setTimeout(fetch_tumblr_data,500); });
                 $('#tumblr_name').on("change",fetch_tumblr_data);
 
-                $('.pagination').on("click",".prev a",function() { event.preventDefault(); go_page(-1) })
-                               .on("click",".next a", function() { event.preventDefault(); go_page(1) });
+                $('.pagination').on("click",".prev a",function() { event.preventDefault(); go_page(cur_page-1) })
+                                .on("click",".next a", function() { event.preventDefault(); go_page(cur_page+1) })
+                                .on("click",".ffwd a", function() { event.preventDefault(); go_page(cur_page+10) })
+                                .on("click",".rwd a", function() { event.preventDefault(); go_page(cur_page-10) })
+                                .on("click",".page a", function() { event.preventDefault(); go_page( $(this).data("page"))  })
             });
         </script>
         <script type="text/javascript">
