@@ -50,19 +50,20 @@
                 <div class="row">
                     <div class="col-md-8 col-md-offset-2">
                         <div class="row">
-                        <form class="col-md-6 col-md-offset-3" role="form">
+                        <form id="tumblr_form" class="col-md-6 col-md-offset-3" role="form">
                             <div class="form-group" id="tumblr_name_group">
                                 <label class="sr-only" for="tumblr_name">Tumblr blog</label>
-                                <input type="email" class="form-control input-lg text-center" id="tumblr_name" placeholder="Enter the name of a tumblr blog" />
+                                <input type="text" class="form-control input-lg text-center" id="tumblr_name" placeholder="Enter the name of a tumblr blog" />
                                 <span class="help-block text-center"></span>
                             </div>
                         </form>
                     </div>
 
                         <div id="tumblr_content" style="display:none">
+                            <a href="/codetest">&laquo; start over</a>
                             <h1></h1>
                             <h2></h2>
-                            <p>This <strong>tumblr</strong> was last updated <span class="last-updated"></span> and has <span class="num-posts"></span> posts.<p>
+                            <p>This <strong>tumblr</strong> was last updated <span class="last-updated"></span> and has <span class="num-posts"></span> posts, shown here <span class="per-page"></span> posts at a time on <span class="total-pages"></span> pages.<p>
 
                             <div class="posts_container">
                                 <ul class="pagination"></ul>
@@ -118,6 +119,7 @@
             var cur_page = 1;
             var total_pages = 0;
             var tumblr_data;
+            var tumblr_name;
 
             var strings = {
                 tumblr_api_url: 'http://api.tumblr.com/v2/blog/{0}/posts?api_key={1}&limit={2}&offset={3}&filter=text&jsonp=?',
@@ -143,23 +145,23 @@
                 var start_page = 1;
                 var $pager = $(".posts_container .pagination")
                     .html("")
-                    .append( strings.pagination_tick.f( "prev " + (cur_page==1)?"disabled":"","&laquo;") )
-                    .append( strings.pagination_tick.f( "rwd " + (cur_page<=10)?"disabled":"","&laquo;&laquo;") );
+                    .append( strings.pagination_tick.f( "prev "+((cur_page==1)?"disabled":""),"&laquo;") )
+                    .append( strings.pagination_tick.f( "rwd "+((cur_page==1)?"disabled":""),"&laquo;&laquo;") );
 
                 if (cur_page >= pages_to_show_in_nav/2) {
                     start_page = cur_page+1-Math.ceil(pages_to_show_in_nav/2);
                  
                 }
                 if (start_page + pages_to_show_in_nav > total_pages) {
-                    start_page = total_pages - pages_to_show_in_nav;
+                    start_page = total_pages - pages_to_show_in_nav + 1;
                 }
 
                 for (var i=start_page;i<start_page+pages_to_show_in_nav;i++) {
                     $pager.append( strings.pagination_tick.f( "page " + ((cur_page==i)?"active":"") ,i) );
                 }
 
-                $pager.append( strings.pagination_tick.f("ffwd","&raquo;&raquo;") )
-                      .append( strings.pagination_tick.f("next","&raquo;") );
+                $pager.append( strings.pagination_tick.f("ffwd "+((cur_page==total_pages)?"disabled":""),"&raquo;&raquo;") )
+                      .append( strings.pagination_tick.f("next "+((cur_page==total_pages)?"disabled":""),"&raquo;") );
 
             }
             function display_tumblr_posts() {
@@ -174,25 +176,33 @@
                 }
             }
 
-            function handle_tumblr_info(data,status) {
+            function show_msg(msg,type) {
+                
                 $('#tumblr_name_group').removeClass('has-error has-success');
+                
+                $('#tumblr_name_group').addClass( (type=="error") ? 'has-error':'has-success' );
+                $('#tumblr_name_group .help-block').html(msg);
+
+            }
+
+            function handle_tumblr_info(data,status) {
                 if (data.hasOwnProperty("meta") && data.meta.hasOwnProperty("status") && data.meta.status == 404) {
 
                     //alert user to failboat
                     $('#tumblr_content').hide();
-                    $('#tumblr_name_group').addClass('has-error');
-                    $('#tumblr_name_group .help-block').html('tumblr blog not found!');
+                    show_msg("tumblr blog not found!","error");
 
                 } else {
 
+                    $('#tumblr_name').blur();
                     //alert user to success
-                    $('#tumblr_name_group').addClass('has-success');
-                    $('#tumblr_name_group .help-block').html('found it!');
+                    show_msg("found it!","success");
+
 
                     if (data.hasOwnProperty("meta") && data.meta.hasOwnProperty("status") && data.meta.status == 200 ) {
                         if (data.hasOwnProperty("response")) {
                             tumblr_data = data.response;
-                            total_pages = Math.ceil(tumblr_data.total_posts/per_page);
+                            total_pages = Math.floor(tumblr_data.total_posts/per_page);
                             //save some meta data for latah
                             var last_updated = new Date(tumblr_data.blog.updated * 1000);
                             
@@ -200,6 +210,8 @@
                             $('#tumblr_content h2').html( tumblr_data.blog.description );
                             $('#tumblr_content .last-updated').html( last_updated );
                             $('#tumblr_content .num-posts').html( tumblr_data.blog.posts );
+                            $('#tumblr_content .per-page').html( per_page );
+                            $('#tumblr_content .total-pages').html( total_pages );
                             $('#tumblr_content').show();
 
                             draw_pagination();
@@ -211,33 +223,65 @@
                 }
             }
 
+            function on_tumblr_change() {
+                tumblr_name = validate_tumblr_name( $("#tumblr_name").val() );
+                if (tumblr_name !== false) {
+                    window.location.hash = "#" + tumblr_name;
+                } else {
+                    show_msg("that's not a proper tumblr name (e.g. velou, oldloves.tumblr.com, worstroom.com)","error");
+                }
+            }
+
             function fetch_tumblr_data() {
 
-                var name = $('#tumblr_name').val().replace(/\W/g, '')+'.tumblr.com';
-                var url = strings.tumblr_api_url.f(name,tumblr_api_key,per_page,(cur_page-1)*per_page);
+                    var url = strings.tumblr_api_url.f(tumblr_name,tumblr_api_key,per_page,(cur_page-1)*per_page);
 
-                var req = $.ajax({
-                            url : url,
-                            dataType : "jsonp",
-                            timeout : 10000,
-                            success : handle_tumblr_info,
-                            error : function() { console.log("FAIL!"); } 
-                    });
+                    var req = $.ajax({
+                                url : url,
+                                dataType : "jsonp",
+                                timeout : 10000,
+                                success : handle_tumblr_info,
+                                error : function() { console.log("FAIL!"); } 
+                        });
+            }
 
+            function validate_tumblr_name(name) {
+
+                var match = name.match(/^[a-zA-Z\d]+(\.tumblr\.com)?$|^(?:[-A-Za-z0-9]+\.)+[A-Za-z]{2,6}/ );
+                if (match != null) {
+                    return match[0] + ((match[0].indexOf(".")==-1)?".tumblr.com":"");
+                } else return false;
             }
 
             function go_page(page) {
                 if ( page > 0 && page <= total_pages  ) {
                     cur_page = page;
-                    fetch_tumblr_data();
+                    on_tumblr_change(); //fetch_tumblr_data();
                 }
             }
 
+            function hash_change() {
+                if (window.location.hash != "") {
+                    name = window.location.hash.substr(1);
+                    if ( tumblr_name = validate_tumblr_name(name)) {
+                        $("#tumblr_name").val(tumblr_name);
+                        fetch_tumblr_data();
+                    }
+                } else {
+                    $("#tumblr_name").val("");
+                }
+
+            }
+
+            $(window).on("hashchange", hash_change);
 
             $(document).ready(function() {
+                hash_change();
+
                 var keyup_timeout;
-                $('#tumblr_name').on("keyup",function(){ console.log("keyup"); clearTimeout(keyup_timeout); keyup_timeout = setTimeout(fetch_tumblr_data,500); });
-                $('#tumblr_name').on("change",fetch_tumblr_data);
+                $('#tumblr_form').on("submit",function() { return false; });
+                $('#tumblr_name').on("keyup",function(){ console.log("keyup"); clearTimeout(keyup_timeout); keyup_timeout = setTimeout(on_tumblr_change,500); });
+                $('#tumblr_name').on("change",on_tumblr_change);
 
                 $('.pagination').on("click",".prev a",function() { event.preventDefault(); go_page(cur_page-1) })
                                 .on("click",".next a", function() { event.preventDefault(); go_page(cur_page+1) })
