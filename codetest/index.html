@@ -25,6 +25,10 @@
             .pagination>.active>a, .pagination>.active>span, .pagination>.active>a:hover, .pagination>.active>span:hover, .pagination>.active>a:focus, .pagination>.active>span:focus {
                 border-color: #d9230f;
             }
+
+            input[type=text].loading {
+                background: transparent url(loading.gif) 90% 50% no-repeat;
+            }
         </style>
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -114,6 +118,7 @@
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
         <script type="text/javascript">
+            $(function() {
             var tumblr_api_key = 'fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4';
             var per_page = 10;
             var cur_page = 1;
@@ -123,7 +128,7 @@
 
             var strings = {
                 tumblr_api_url: 'http://api.tumblr.com/v2/blog/{0}/posts?api_key={1}&limit={2}&offset={3}&filter=text&jsonp=?',
-                                pagination_tick: '<li class="{0}"><a data-page={1} href="#">{1}</a></li>',
+                pagination_tick: '<li class="{0}"><a data-page={1} href="#">{1}</a></li>',
                 post_template: '<div class="col-md-{3}"><h2><a href="{0}">{1}</a></h2><p class="date">{2}</p></div>'
 
             };
@@ -141,12 +146,16 @@
 
             /* the end of pagination? not yet... http://www.codinghorror.com/blog/2012/03/the-end-of-pagination.html */
             function draw_pagination() {
+
                 var pages_to_show_in_nav = 11;
                 var start_page = 1;
                 var $pager = $(".posts_container .pagination")
                     .html("")
                     .append( strings.pagination_tick.f( "prev "+((cur_page==1)?"disabled":""),"&laquo;") )
                     .append( strings.pagination_tick.f( "rwd "+((cur_page==1)?"disabled":""),"&laquo;&laquo;") );
+
+                if ( total_pages < pages_to_show_in_nav ) 
+                    pages_to_show_in_nav = total_pages;
 
                 if (cur_page >= pages_to_show_in_nav/2) {
                     start_page = cur_page+1-Math.ceil(pages_to_show_in_nav/2);
@@ -164,8 +173,9 @@
                       .append( strings.pagination_tick.f("next "+((cur_page==total_pages)?"disabled":""),"&raquo;") );
 
             }
+
             function display_tumblr_posts() {
-                console.log("fetching tumblr posts");
+                
                 $posts = $(".posts_container .posts").html("");
                 for (var i=0;i<tumblr_data.posts.length;i++) {
                     post = tumblr_data.posts[i];
@@ -174,18 +184,19 @@
                         $posts.append('</div><!--/end row-->\n<div class="row">');
                     }
                 }
+
             }
 
             function show_msg(msg,type) {
                 
                 $('#tumblr_name_group').removeClass('has-error has-success');
-                
                 $('#tumblr_name_group').addClass( (type=="error") ? 'has-error':'has-success' );
                 $('#tumblr_name_group .help-block').html(msg);
 
             }
 
             function handle_tumblr_info(data,status) {
+                $('#tumblr_name').removeClass("loading");
                 if (data.hasOwnProperty("meta") && data.meta.hasOwnProperty("status") && data.meta.status == 404) {
 
                     //alert user to failboat
@@ -202,7 +213,8 @@
                     if (data.hasOwnProperty("meta") && data.meta.hasOwnProperty("status") && data.meta.status == 200 ) {
                         if (data.hasOwnProperty("response")) {
                             tumblr_data = data.response;
-                            total_pages = Math.floor(tumblr_data.total_posts/per_page);
+                            total_pages = 1 + Math.floor(tumblr_data.total_posts/per_page);
+                            
                             //save some meta data for latah
                             var last_updated = new Date(tumblr_data.blog.updated * 1000);
                             
@@ -224,25 +236,29 @@
             }
 
             function on_tumblr_change() {
+                
                 tumblr_name = validate_tumblr_name( $("#tumblr_name").val() );
+                
                 if (tumblr_name !== false) {
                     window.location.hash = "#" + tumblr_name;
                 } else {
                     show_msg("that's not a proper tumblr name (e.g. velou, oldloves.tumblr.com, worstroom.com)","error");
                 }
+
             }
 
             function fetch_tumblr_data() {
+                $('#tumblr_name').addClass("loading");
 
-                    var url = strings.tumblr_api_url.f(tumblr_name,tumblr_api_key,per_page,(cur_page-1)*per_page);
+                var url = strings.tumblr_api_url.f(tumblr_name,tumblr_api_key,per_page,(cur_page-1)*per_page);
 
-                    var req = $.ajax({
-                                url : url,
-                                dataType : "jsonp",
-                                timeout : 10000,
-                                success : handle_tumblr_info,
-                                error : function() { console.log("FAIL!"); } 
-                        });
+                var req = $.ajax({
+                            url : url,
+                            dataType : "jsonp",
+                            timeout : 10000,
+                            success : handle_tumblr_info,
+                            error : function() { console.log("FAIL!"); } 
+                    });
             }
 
             function validate_tumblr_name(name) {
@@ -251,18 +267,31 @@
                 if (match != null) {
                     return match[0] + ((match[0].indexOf(".")==-1)?".tumblr.com":"");
                 } else return false;
+                
             }
 
             function go_page(page) {
+                if (page <= 0) page = 1;
+                if (page > total_pages) page = total_pages;
+
                 if ( page > 0 && page <= total_pages  ) {
                     cur_page = page;
-                    on_tumblr_change(); //fetch_tumblr_data();
+                    window.location.hash = "#" + tumblr_name + "|" + cur_page;
                 }
             }
 
             function hash_change() {
                 if (window.location.hash != "") {
-                    name = window.location.hash.substr(1);
+
+                    hash = window.location.hash.substr(1);
+                    if (hash.indexOf("|")!=-1) {
+                        hash_array = hash.split("|");
+                        name = hash_array[0];
+                        cur_page = parseInt(hash_array[1]);
+                    } else {
+                        name = hash;
+                        cur_page = 1;
+                    }
                     if ( tumblr_name = validate_tumblr_name(name)) {
                         $("#tumblr_name").val(tumblr_name);
                         fetch_tumblr_data();
@@ -280,14 +309,15 @@
 
                 var keyup_timeout;
                 $('#tumblr_form').on("submit",function() { return false; });
-                $('#tumblr_name').on("keyup",function(){ console.log("keyup"); clearTimeout(keyup_timeout); keyup_timeout = setTimeout(on_tumblr_change,500); });
-                $('#tumblr_name').on("change",on_tumblr_change);
-
+                $('#tumblr_name').on("keyup",function(){ clearTimeout(keyup_timeout); keyup_timeout = setTimeout(on_tumblr_change,1000); })
+                                 .on("change",on_tumblr_change);
                 $('.pagination').on("click",".prev a",function() { event.preventDefault(); go_page(cur_page-1) })
                                 .on("click",".next a", function() { event.preventDefault(); go_page(cur_page+1) })
                                 .on("click",".ffwd a", function() { event.preventDefault(); go_page(cur_page+10) })
                                 .on("click",".rwd a", function() { event.preventDefault(); go_page(cur_page-10) })
                                 .on("click",".page a", function() { event.preventDefault(); go_page( $(this).data("page"))  })
+                                });
+
             });
         </script>
         <script type="text/javascript">
