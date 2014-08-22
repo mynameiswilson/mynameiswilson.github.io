@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>Ben Wilson</title>
+	<link rel="Shortcut Icon" href="/favicon.ico" type="image/x-icon" />
+	<meta http-equiv="pragma" content="no-cache" />
+	<meta name="robots" content="all" />
+	<meta name="MSSmartTagsPreventParsing" content="true" />
+	<meta http-equiv="imagetoolbar" content="false" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->	
+	<style>
+        @import url(http://fonts.googleapis.com/css?family=Cabin)
+        * { padding: 0; margin: 0; }
+		body { background-color: #f4f4f4; margin: 0 }
+		p { color: #000; font-family: 'Cabin',Helvetica; font-size: 16px; line-height: 1.5em; margin-bottom: 22px; -webkit-font-smoothing: antialiased; }
+        div p:first-child { margin-top: 0 } 
+        a { color: #000; font-weight: bold; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.3); }
+		a:hover { color: #990000; border-bottom: 1px solid rgba(255,255,255,1); }
+        #monogram { width: 250px; padding: 50px 0 0 0; margin: 0 auto 0 50px; }
+        #monogram img { width: 100%; height: auto } 
+        #about { width: 360px; padding: 0 0 0 0; margin: 0 50px 0 auto; }
+        #backstretch {  } 
+        #switcher { display:none; position: absolute; bottom: 0; left: 0; z-index: 99 } 
+	</style>
+
+    <style>
+		@media (max-width: 767px) {
+            #monogram { margin: 0 auto; padding: 0  } 
+            #about { position: relative; width: auto; padding: 20px; margin: 0 !important; }
+            #backstretch { opacity: 0.2 } 
+        }
+    </style>
+    <style id="onthefly"></style>
+</head>	
+    
+<body>
+
+<!-- swap out for a logo -->
+<div id="monogram">
+    <img src="mynameiswilson.png" />
+    <img src="ben-sobright.jpg" />
+</div>
+
+<!-- swap out for information about yourself -->
+<div id="about">
+    <p>Ben Wilson is a professional web developer for <a href="http://www.powercreative.com">Power Creative</a>, a full-service ad agency in his hometown of Louisville, Kentucky, USA.</p>
+    <p>He is all over Twitter, writing about personal errata <a href="https://twitter.com/intent/user?screen_name=mynameiswilson">@mynameiswilson</a>, the local cycling culture and bike racing <a href="https://twitter.com/intent/user?screen_name=velolouisville">@velolouisille</a>, as well as PRO-tweeting about web design, development and technology <a href="https://twitter.com/intent/user?screen_name=power_ben">@power_ben</a>.</p>
+    <p>Personally he is really fond of <a href="http://velolouisville.com">reading about, riding on and racing with bikes</a>.</p>
+    <p>He was married <time datetime="2002-04-26T12:00:00">April 26, 2002</time> to Kelly. His daughter Amelia was born <time datetime="2009-07-14T12:00:00">July 14, 2009</time> and his son Sam was born <time datetime="2012-02-02T12:00:00">February 2, 2012</time>.</p>
+
+    <div id="switcher"><input type="radio" name="switch" value="original">&nbsp;original <input type="radio" checked="checked" name="switch" value="styletween"/>&nbsp;styletween</div>
+</div>
+
+<!--include jquery & backstretch-->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+<script type="text/javascript" src="jquery.backstretch.min.js"></script>
+<script type="text/javascript" src="jquery.timeago.js"></script>
+<script type="text/javascript" src="twitter-intents.js"></script>
+<script src="http://sources.disruptive-innovations.com/jscssp/trunk/cssParser.js"></script>
+
+<script type="text/javascript" src="styleTween.js"></script>
+<script type="text/javascript">
+if (typeof console == "undefined") { var console = { log: function() {} } }
+var imgs = [
+{ img: "grover-large-1440.jpg", style: "#monogram { padding-left: 75px } #about { width: 420px; padding: 1em; background: rgba(0,0,0,0.1) } p { color: #fff; } a { color: #fff }" },
+{ img: "ben-at-work.jpg", style: "#monogram { float:left; width: 175px; margin-left: 2em; background: #fff; padding-bottom: 75px } #about { float:left; padding-top: 50px; margin:0 0 0 2em; width: auto  } p { float:left; font-size: 14px; width: 175px; margin-top: 0; margin-right: 1em; color: #f0f0f0 } a { color: #ffffff; } a:hover { color: #f0f0f0; }  " },
+{ img: "dirty-feet-large-1440.jpg", style: "#monogram { margin: 0 160px 0 auto }" },
+{ img: "furly-provisioned-large-1440.jpg", style: "#monogram,#about { padding-left: 1em; padding-right: 1em; width: 150px;} #monogram { margin: 0 50px 0 auto; background: white } #about { border-bottom-left-radius: 1em; border-bottom-right-radius: 1em; background: white; padding-top: 1em; padding-bottom: 1em }   p { font-size: 12px; color: #3d3d3d } " },
+{ img: "push-button-large-1440.jpg", style: "  #monogram { font-size: 0; position: absolute; bottom: 0; left: 0; margin: 0; z-index: 99; } #about { height: 230px;  margin: 0; padding: 10px 0; position: absolute; bottom: 0; left: 0px; background: black; width: 75%; padding-left: 25%;} p { float:left; width: 240px; margin-left: 10px; } div p:first-child { margin-left: 0 }  p,a { margin-top: 0; color: #fff } @media(max-width:1023px) { #about { padding-left: 0 }  p { float: none; width: 100% }    }   " },
+{ img: "yoyo-large-1440.jpg", style: "#about { margin-left: 50px } p { color: white } " }
+    ];
+
+var cur = 0;
+var cur_img = function() { return ( typeof imgs[cur] == "object" ) ? imgs[cur].img : imgs[cur]; };
+var cur_style = function() { return ( typeof imgs[cur] == "object" ) ? imgs[cur].style : ''; };
+var swapbackground = function() {
+
+    $.backstretch(cur_img(), {speed: 150});
+
+    if (  $('input[name=switch]:checked').val() == "styletween" ) {
+
+        switch_styles(cur_style(), "@media(min-width:1023px) { {0} }");
+        $('#onthefly').html("");
+    } else {
+        $('#onthefly').html("@media(min-width:1023px) { "+cur_style()+"}");
+
+    }
+
+    
+    cur = (cur+1>imgs.length-1) ? 0:cur+1;
+
+    //setTimeout(swapbackground,5000); 
+};
+$(function(){
+    $(window).resize(function(){
+        if($(this).width() >= 767){
+            $.backstretch($('#backstretch img').attr("src"), {speed:150});
+        }
+    });
+    $('#monogram').on("click",swapbackground);
+
+    $('time').timeago();
+    swapbackground(); 
+});
+</script>
+
+<script type="text/javascript">
+
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-82128-4']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+
+</script>
+</body>	
+</html>
