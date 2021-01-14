@@ -23,7 +23,7 @@ email: ben@thelocust.org
 description: >- # this means to ignore newlines until "baseurl:"
   Adventures in SBDM - My experiences as an Site-Based Decision-Making Council
   Parent Representative for Lincoln Performing Arts Elementary School in Louisville, Kentucky.
-baseurl: "/sbdm" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://benwilson.org" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: mynamesiswilson
 github_username:  mynamesiswilson
