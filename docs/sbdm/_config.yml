@@ -1,0 +1,37 @@
+title: Ben Wilson - Adventures in SBDM
+email: ben@thelocust.org
+description: >- # this means to ignore newlines until "baseurl:"
+  Adventures in SBDM - My experiences as an Site-Based Decision-Making Council
+  Parent Representative for Lincoln Performing Arts Elementary School in Louisville, Kentucky.
+baseurl: "/sbdm" # the subpath of your site, e.g. /blog
+url: "https://benwilson.org" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: mynamesiswilson
+github_username:  mynamesiswilson
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-admin
+
+show_drafts: true
+
+# Exclude from processing.
+# The following items will not be processed, by default.
+# Any item listed under the `exclude:` key here will be automatically added to
+# the internal "default list".
+#
+# Excluded items can be processed by explicitly listing the directories or
+# their entries' file path in the `include:` list.
+#
+exclude:
+   - .sass-cache/
+   - .jekyll-cache/
+   - gemfiles/
+   - Gemfile
+   - Gemfile.lock
+   - node_modules/
+   - vendor/bundle/
+   - vendor/cache/
+   - vendor/gems/
+   - vendor/ruby/
