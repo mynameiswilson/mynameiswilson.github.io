@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<!--//
+newsFeeds v2.0
+configuration file
+newsfeeds.config.xml
+
+refer to the README that (should have) come with this script for contact information
+
+config is the "root" tag, and everything should fall between them!  
+
+config has a couple of "children":
+  feeddirectory - direct, absolute path where you would like the feeds deposited
+                  make sure it exists, and is readable/writable by whomever the httpd
+                  daemon runs as (should be 'nobody', but is 'apache' or 'www-data' in 
+                  some cases)
+
+  headerHTML - the header, item and footer HTML that will be show when "showNewsFeed" is called
+  itemHTML   - check the examples for instructions on how to edit these correctly!  if you don't have
+  footerHTML - these specified, then nothing will be shown (huzzah!)
+  
+  styleHTML - style sheet include filename
+
+  otfretrieve - "on the fly" retrieval of new feeds.   this will allow the script to pull down new feeds when a user
+                loads the page.  this can be VERY slow, especially if the feed isn't available! use at yer own risk
+                0 for inactive, 1 for active
+
+  cronretrieve - retrieval of new feeds via a "cron" job.  0 for inactive, 1 for active
+
+config can have multiple "newsfeed" children - these are all the newsfeeds that you want shown!
+
+newsfeed has these children:
+  url     : the link to the RDF/RSS that you are pulling - it should /hopefully/ be correct
+  filename: the name that you would like this file to be called when it is stored in 'feeddirectory'
+            (handy when a site names it's backend file 'backend.rdf' - WOW!  Original!
+  interval: the number of $interval (see below) that you'd like to wait before getting a fresh feed
+  timeunit: either H, M, S, or D (hours, minutes, seconds, days), and combined with $interval, will be the
+            amount of time you would like to wait in order to get a new, fresh feed!
+  showtitle: show the title of the feed (in Slashdot's case, it's "Slashdot")
+  showimage: show the image that comes along with the feed.  some are ugly (segfault.org), some are nice (salon.com)
+  showdesc : show the description that comes along with the feed.  Slashdot's is "news for nerds, stuff that matters", and 
+             freshmeat.net's is some huge long position statement, blah blah.  obviously, we don't need to show that.
+  showinput: some feeds come along with "textinput" stuff - so you can setup a search form. show it?
+  isactive : 0 for no, 1 for yes.  if this tag isn't present, assume active!
+  debug    : 1 will show you a print_r (a good looking text representation of an array) of the items in the newsfeed
+//-->
+<config>
+  
+<feeddirectory>/home/httpd/vhosts/thelocust.org/httpdocs/html/projects/phpfeed/includes/rdf/</feeddirectory>
+  <headerHTML>includes/phpFeed_header_css.inc.php</headerHTML>
+  <itemHTML>includes/phpFeed_item_css.inc.php</itemHTML>
+  <footerHTML>includes/phpFeed_footer_css.inc.php</footerHTML>
+  <styleHTML>includes/phpFeed_style_css.inc.php</styleHTML>
+  <otfretrieve>1</otfretrieve>
+  <cronretrieve>0</cronretrieve>
+
+
+  <newsfeed>
+    <url>http://thelocust.org/feed/</url>
+    <filename>thelocust.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <isactive>1</isactive>
+    <showdesc>1</showdesc>
+    <showimage>1</showimage>
+    <showtitle>1</showtitle> 
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://arstechnica.com/etc/rdf/ars.rdf</url>
+    <filename>ars.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <isactive>1</isactive>
+    <showdesc>0</showdesc>
+    <showimage>0</showimage>
+    <showtitle>1</showtitle> 
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://slashdot.org/slashdot.rdf</url>
+    <filename>slashdot.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <isactive>1</isactive>
+    <showtitle>1</showtitle>
+    <showimage>1</showimage>
+    <showdesc>1</showdesc>
+    <showinput>0</showinput>
+  </newsfeed>
+
+
+
+  <newsfeed>
+    <url>http://kuro5hin.org/backend.rdf</url>
+    <filename>kuro5hin.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <isactive>1</isactive>
+    <showtitle>1</showtitle>
+    <showimage>1</showimage>
+    <showitemdesc>1</showitemdesc> 
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://sweetcode.org/index.xml</url>
+    <filename>sweetcode.xml</filename>
+    <showimage>1</showimage>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <isactive>1</isactive>
+    <showdesc>1</showdesc>
+    <showimage>1</showimage>
+    <showtitle>1</showtitle>
+
+  </newsfeed>
+
+
+  <newsfeed>
+    <url>http://memepool.com/memepool.rss</url>
+    <filename>memepool.rss</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <showtitle>1</showtitle>
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://freshmeat.net/backend/fm.rdf</url>
+    <filename>fm.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <showdesc>0</showdesc>
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://www.wired.com/news_drop/netcenter/netcenter.rdf</url>
+    <filename>wired_netcenter.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <showdesc>0</showdesc>
+    <showtitle>0</showtitle>
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://www.salon.com/feed/RDF/salon_use.rdf</url>
+    <filename>salon_use.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <showdesc>0</showdesc>
+    <showtitle>0</showtitle>
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://segfault.org/stories.xml</url>
+    <filename>segfault_stories.xml</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <showdesc>0</showdesc>
+    <showtitle>0</showtitle>
+  </newsfeed>
+
+  <newsfeed>
+    <url>http://bbspot.com/bbspot.rdf</url>
+    <filename>bbspot.rdf</filename>
+    <interval>30</interval>
+    <timeunit>M</timeunit>
+    <isactive>0</isactive>
+  </newsfeed>
+
+</config>

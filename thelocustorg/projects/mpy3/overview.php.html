@@ -1,0 +1,84 @@
+<div id="SideBar">
+
+<h1>nav</h1>
+<ul>
+<li><a href="index.php.html">home</a></li>
+<li><a href="overview.php.html">overview</a></li>
+<li><a href="libraries.php.html">libraries</a></li>
+<!--<li><a href="docs.php">docs</a></li>-->
+<li><a href="download.php.html">download</a></li>
+</ul>
+
+<h2>links</h2>
+<ul>
+<li><a href="http://www.sourceforge.net/projects/mpy3" alt="freshmeat" class="External">mpy3 @ sourceforge</a></li>
+<li><a href="http://www.python.org" alt="python dot org" class="External">python dot org</a></li>
+<li><a href="http://cajun.sourceforge.net" alt="cajun @ sourceforge" class="External">cajun @ sourceforge</a></li>
+<li><a href="http://www.crystalfontz.com" alt="crystalfontz" class="External">crystalfontz</a></li>
+<li><a href="http://lcdproc.omnipotent.com" alt="lcdproc" class="External">lcdproc</a></li>
+</ul>
+
+<h2>todo</h2>
+<ul>
+<li>v2.1 (in dev)</li>
+  <ul>
+    <li>help state DONE!</li>
+    <li>mpg123 library DONE!</li>
+    <li>LCDProc interface library (pyLCDProc.py) DONE!</li>
+    <li>joystick interface (pyjoyinput.py) DONE!</li>
+    <li>playlist saving</li>
+  </ul>
+</ul>
+
+<h2>changelog</h2>
+<ul>
+ <li>v2.0 (current stable)</li>
+   <ul>
+     <li>many speed updates</li>
+     <li>new <a href="http://www.wxpython.org" class="External">wxPython</a> based lcd "emulator" for X (pyLCDemu.py)</li>
+     <li>playlisting support!</li>
+     <li>threading</li>
+   </ul>
+</ul>
+
+<!--<p>
+<a href="http://sourceforge.net"> 
+<IMG src="http://sourceforge.net/sflogo.php?group_id=16852" width="88" height="31" border="0" alt="SourceForge
+Logo">
+</a>
+</p>-->
+
+</div>
+
+
+<h1>mpy3</h1>
+
+<h2>overview</h2>
+
+
+<ul class="List">
+<li><a href="index.php.html">MPy3</a> is primarily a <a href="http://www.mp3car.com">car mp3</a> system.</li>
+<li><a href="index.php.html">MPy3</a> is written in <a href="http://www.python.org">Python</a></li>
+<li><a href="index.php.html">MPy3</a> is supposed to be hackable.</li>
+<li><a href="index.php.html">MPy3</a> has a number of <a href="libraries.php.html">libraries</a> that control the audio, input, and display and are designed to be used independently.</li>
+<li><a href="index.php.html">MPy3</a> supports the use of <a href="http://www.xfree86.org">X</a> -or- any LCD that <a href="http://lcdproc.omnipotent.net">lcdproc</a> supports.  Also, <a href="http://www.crystalfontz.com">CrystalFontz</a> LCDs are supported w/o the use of lcdproc!</li>
+</ul>
+
+ 
+<p>
+Intended for use in a <a href="http://www.mp3car.com">car mp3 system</a>, MPy3 is modeled in a large part programmatically and visually from <a href="http://cajun.sf.net">CAJUN</a>, a car-mp3 system written with Perl for use under Unix/Linux.  There were somethings that I found missing from CAJUN, and not knowing Perl -- or Python for that matter, I decided to write my own.  After checking into Python, and liking what I saw, I got to work!  After about 3 weeks off and on, I had written the basic framework for MPy3, a library to control the LCD (pyCFontz.py), a library to control the mixer (pymixer.py), a library to control the MP3 player, rxaudio (pyrx.py), and a small library to control the playlist (pyplaylist.py).  Needless to say, I was in love with Python -- easy to learn, and easy to hack!  
+</p>
+<p>
+Well, I eventually released MPy3 1.0, which had a number of issues, but it worked damnit!  My Car MP3 setup changed, and I couldn't use my serial LCD anymore, so I wrote a X-enable LCD "emulator" (pyLCDemu.py) for testing purposes and possible TV-out usage.  it is rough, but follows the same command structure as pyCFontz.  I was hoping to have it set up by the time my summer vacated (end of July 2001 rolled around, but i couldn't hack it, and I shelved the project for a wee bit.  This round of development included threading for the player and input sections -- making the lag much less!  Good stuff, that!
+</p>
+<p>
+After a number of people came about with new additions for MPy3 and the libraries (Matrix Orbital support, parallel usage, etc) I found that my USB/serial converter worked fine with my CrystalFontz lcd -- and I got back into MPy3 once again.  Development had resumed on MPy3 2.0!  Speed ups and playlisting support were necessary for this rev, and they have been achieved using Threading and non-blocking selects, etc. Anyway, MPy3 2.0 is complete, and work on 2.1 is already starting!
+</p>
+
+
+
+
+
+
+
+

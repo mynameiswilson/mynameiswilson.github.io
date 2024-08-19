@@ -1,0 +1,89 @@
+<div id="SideBar">
+
+<h1>nav</h1>
+<ul>
+<li><a href="index.php.html">home</a></li>
+<li><a href="overview.php.html">overview</a></li>
+<li><a href="libraries.php.html">libraries</a></li>
+<!--<li><a href="docs.php">docs</a></li>-->
+<li><a href="download.php.html">download</a></li>
+</ul>
+
+<h2>links</h2>
+<ul>
+<li><a href="http://www.sourceforge.net/projects/mpy3" alt="freshmeat" class="External">mpy3 @ sourceforge</a></li>
+<li><a href="http://www.python.org" alt="python dot org" class="External">python dot org</a></li>
+<li><a href="http://cajun.sourceforge.net" alt="cajun @ sourceforge" class="External">cajun @ sourceforge</a></li>
+<li><a href="http://www.crystalfontz.com" alt="crystalfontz" class="External">crystalfontz</a></li>
+<li><a href="http://lcdproc.omnipotent.com" alt="lcdproc" class="External">lcdproc</a></li>
+</ul>
+
+<h2>todo</h2>
+<ul>
+<li>v2.1 (in dev)</li>
+  <ul>
+    <li>help state DONE!</li>
+    <li>mpg123 library DONE!</li>
+    <li>LCDProc interface library (pyLCDProc.py) DONE!</li>
+    <li>joystick interface (pyjoyinput.py) DONE!</li>
+    <li>playlist saving</li>
+  </ul>
+</ul>
+
+<h2>changelog</h2>
+<ul>
+ <li>v2.0 (current stable)</li>
+   <ul>
+     <li>many speed updates</li>
+     <li>new <a href="http://www.wxpython.org" class="External">wxPython</a> based lcd "emulator" for X (pyLCDemu.py)</li>
+     <li>playlisting support!</li>
+     <li>threading</li>
+   </ul>
+</ul>
+
+<!--<p>
+<a href="http://sourceforge.net"> 
+<IMG src="http://sourceforge.net/sflogo.php?group_id=16852" width="88" height="31" border="0" alt="SourceForge
+Logo">
+</a>
+</p>-->
+
+</div>
+
+
+<h1>mpy3</h1>
+
+<h2>libraries</h2>
+
+<p>
+MPy3 has a number of libraries packaged with it, and they are all designed to be used elsewhere.  Check the documentation within each file for help, or <a href="https://thelocust.org/projects/mpy3/contact.php">contact me</a>. Check the <a href="download.php.html">downloads</a> section to get &rsquo;em.
+</p>
+
+<p>
+Currently, the libraries can be broken down into four sections -- audio, display, input, and other.
+</p>
+
+<h2>audio</h2>
+<p><a href="libraries.php.html#">pymix.py</a> - this controls &rsquo;aumix&rsquo;, the popular unix console/X audio mixer.  Pretty easy.</p>
+<p><a href="libraries.php.html#">pyrx.py</a> - a python library to control and read from rxaudio from <a href="http://www.xaudio.com">Xaudio</a>, which is an mp3 playing suite that includes the aforementioned rxaudio, a text-controlled mp3 player.  Pretty solid!</p>
+<p><a href="libraries.php.html#">pympg123.py</a> - a library to control and read info from <a 
+href="http://www.mpg123.de">mpg123</a>, the ubiquitous mp3 player 
+for the console -- mpg123 has interactive mode (-R filename) that allows you to enter commands on the fly. How 
+handy.</p>
+
+<h2>display</h2>
+<p><a href="libraries.php.html#">pyLCDProc.py</a> - a python library, modeled after pyCFontz.py that makes MPy3 into an <a href="http://lcdproc.omnipotent.net">LCDProc</a> client. Brand new in v2.1!  This may become the de-facto standard, because you can use damn near any serial/parallel LPT out there, and there is a consistent set of commands for it.</p>
+<p><a href="libraries.php.html#">pyCFontz.py</a> - a python library to control an <a href="http://www.crystalfontz.com">CrystalFontz</a> Intelligent Serial LCD.  Great LCD&rsquo;s, and with the great documentation for these reasonably inexpensive LCD&rsquo;s, the library should be rather solid.</p>
+<p><a href="libraries.php.html#">pyLCDemu.py</a> - a python library to emulate an LCD, and it uses the same function calls as pyCFontz, and attempts to mimic it -- it requires <a href="http://www.wxpython.org">wxWindows for Python</a>, &rsquo;cause I liked it better than Tk, and I could re-write the MainLoop for wxWindows.  It works exactly the same as pyCFontz -- handy if you can&rsquo;t use your LCD (like I couldn&rsquo;t for a while!)</p>
+
+<h2>input</h2>
+<p><a href="libraries.php.html#">pyttyinput.py</a> - input from a TTY! (shocking!). This is the standard "input" library for MPy3.</p>
+<p><a href="libraries.php.html#">pyjoyinput.py</a> - simple input from a joystick, with pyjoyinput.conf as the configuration.  it can autodetect the number of buttons and axes yer joystick has, however it doesn&rsquo;t automatically detect which was is pos/neg on your axis, so you may have to fiddle with the configuration file (which is really just a file that says "if buttonX is pressed, then send this character", or if "axisX-up, send charX"</p>
+<p><a href="libraries.php.html#">pylircinput.py</a> - written by <a href="mailto:pjennings[at]pjennings[dot]net">Paul 
+Jennings</a>, and based off pyjoyinput, this little library controls mpy3 via <a 
+href="http://www.lirc.org">LIRC</a>, the Linux IR Control package -- handy!</p>
+
+<h2>other</h2>
+<p><a href="libraries.php.html#">pyplaylist.py</a> - a python library for playlisting control.  It&rsquo;s pretty simple at the moment.  It recursively will scan a directory for mp3&rsquo;s, and keep them in an array.  That is the "master list" by which the "playlist" for the class references.  It uses mp3infor.py from Eduardo Roldan to yank the id3v1 tags.  </p>
+
+

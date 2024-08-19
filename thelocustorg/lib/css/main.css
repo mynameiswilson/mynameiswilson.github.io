@@ -1,0 +1,194 @@
+* { margin: 0; padding:0 }
+
+html,body { background: url('../images/base-bg.jpg') 0 0; }
+
+html {
+/*background: url('/lib/images/top-bg.jpg') repeat-x 0 0;*/
+width: 100%;
+height: 100%;
+margin:0; 
+padding:0;
+/*background-image: url(/lib/images/vercetti.gif);*/
+font-family: Arial, Helvetica, sans-serif;
+font-size: 12px;
+}
+
+/* reset margin/padding on block elements */
+p,td,h1,h2,h3,h4,ul,li,blockquote,pre { margin: 0; padding: 0;}
+
+/* text colors */
+div, td, p, tt, pre, li, blockquote,h1,h2,h3,h4 { color: #000;}
+a,a:visited,a:hover,a:link { color: #000;}
+
+
+/*headlines*/
+h1,h2,h3,h4 { line-height: 100%;}
+h1 { font-size: 175%; margin: 0 0 .5em 0}
+h2 { font-size: 150%; margin: 0 0 .5em 0}
+h3 { font-size: 125%; margin: 0 0 .5em 0}
+h4 { font-size: 110%; margin: 0 0 .5em 0}
+
+/*shadow*/
+.shadowtitle {  position: relative; height: 1%; /*hack for IE to abs pos correctly*/} 
+.shadowtitle h1 a {  text-decoration: none;  }
+.shadowtitle h1 { line-height: 100%;  position: relative; z-index: 99; margin: 0; padding: 0 }
+.shadowtitle h1.shadow { position: absolute; font-size: 100%; top: 2px; left: 2px; z-index: 98; } 
+
+p, ul,blockquote, pre { margin: 0 0 1em 0;}
+ul, ol { margin-left: 1.5em; }
+
+blockquote { font-style: italic; margin: 0 1em; }
+
+img { display: block; }
+img.Icon { border: 0 !important; display: inline; vertical-align: middle }  
+img.NoBorder { border: 0 !important;}
+a img { border: 0; }
+a img.enlargement { position: absolute; top: -50px; left: -50px; float: none; margin: 0; padding: 0; display: none; }
+a.External { 
+background-image: url(../images/external.png);
+background-repeat: no-repeat;
+background-position: 100% 50%;
+padding-right: 12px;
+}
+
+a.External.Image {  background-image: none; } 
+
+.FloatRight, .floatRight {  float: right; /*clear: right;*/ margin: 0 0 1em 1em; }
+.FloatLeft, .floatLeft {  float: left; /*clear: left;*/ margin: 0 1em 1em 0; }
+
+.clear { clear: both }
+.clear:after { 
+    content: "."; 
+    display: block; 
+    height: 0; 
+    clear: both; 
+    visibility: hidden;
+}
+
+ul.HNav { margin: 0; padding: 0 }
+ul.HNav li { display: inline; list-style: none; margin-left: 1em; }
+ul.HNav li.first { margin-left: 0  }
+
+ul.HNav.rightMargin li { margin: 0 0 1em  0; }
+
+table.layout { margin:0;padding:0 }
+table.layout tr td { vertical-align: top }
+table.layout td img { margin-right: .5em }
+
+table.list { margin: 0 0 1em  0 }
+table.list tr th { background-color: #ccc; padding: 0 1em }
+table.list tr td { padding: 0 1em }
+
+/* page */
+
+/* color control pulldown */
+
+/* main content area */
+#outframe { max-width: 750px; position: relative;  margin: 0 auto; padding-bottom: 2em; height: 100%; z-index: 99; }
+
+* html #outframe { width: 750px; }
+
+#inframe { 
+	position: relative; 
+	max-width: 700px;
+	margin: 50px 1em 1em 1em;
+    height: 100%;
+    z-index: 99;
+}
+
+.tape { position: absolute; z-index: 90; }
+#tapetl { top: -50px; left: -50px; }
+#tapetr { top: -50px; right: -50px; }
+
+#birdcam-sign { position: absolute;  left: -150px; top: 200px; }
+
+#content { 
+  border-top: 4px solid #fff;
+  border-bottom: 4px solid #fff;
+  padding: 1em 2em 1em 2em;
+  z-index: 80;
+  line-height: 125%;
+  font-size: 15px;
+  background-color: #fff;
+}
+#content a { text-decoration: underline; /*border-bottom: 1px dotted #000;*/ }
+#content img {  border: 1px solid #000 }
+
+#masthead { position: relative; margin: 0 0 0 73px; z-index: 99; width: auto }
+#masthead h1 { color: #c00; font-size: 650%; line-height: 75%; font-family: "Trebuchet MS"; font-variant: small-caps; display: inline }
+#masthead h1 a { color: #c00; border: 0; text-decoration: none }
+#masthead h1 a:hover { border: 0; }
+#masthead h1.shadow { color: #222; top: 3px; left: 2px; border-bottom: 0; }
+
+#topnav { position: relative; z-index:99; font-size: 150%; width: 100%; text-align: center; margin: .75em 0 1em 0; white-space: nowrap; }
+#topnav a { font-family: 'Trebuchet MS',Arial,helvetica,sans-serif; text-decoration: none; border-bottom: 1px dotted #bbb; font-weight: bold; letter-spacing: .1em; }
+#topnav a:hover { border-bottom: 1px solid #000; margin-bottom: -.5em;  }
+#topnav li { line-height: 150% }
+#topnav li.Selected a { color: #6b8cb7; border-bottom: 1px solid #000 }
+
+body.home #content { padding-top: 2em }
+body.home #masthead { margin: 0 0 0 25px }
+body.home #inframe {  width: 760px  }
+body.home #outframe {  width: 760px  }
+
+#subheader { clear:both; margin-bottom: 1em; }
+
+/* sidebar */
+/* for blog and gallery */
+#sidebar {
+	background: #fff;
+	border-left: 1px dotted #fff;
+	padding: .5em;
+    margin-top: 1em;
+}
+
+#sidebar ul {
+	color: #ccc;
+	list-style-type: none;
+	margin: 0;
+	padding-left: 3px;
+	text-transform: lowercase;
+}
+
+#sidebar ul li { float:left; padding-right: 1em; }
+#sidebar ul ul {
+	font-variant: normal;
+	font-weight: normal;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	text-align: left;
+}
+#sidebar ul ul li { float:none; padding-right:none }
+#sidebar ul ul li a { color: #000; text-decoration: none }
+#sidebar ul ul li a:hover {	border-bottom: 1px solid #809080;}
+#sidebar ul ul ul.children { font-size: 142%; padding-left: 4px }
+
+#sidebar form { margin: 0 }
+
+#sidebar input#s {
+	background: #eee;
+	border: 1px solid #999;
+	color: #000;
+	
+}
+
+#sidebar h2 {
+	font-weight: normal;
+	margin:0;
+	padding:0;
+}
+
+/* end sidebar */
+
+
+#footertext { text-align: center; color: #fff }
+#footertext a { color: #fff }
+#footertext #googleads { margin-top: 1em; }
+
+/* extraneous nonsense */
+#lastfm {  position: absolute; top: 250px; right: 50px; z-index: 1; }
+#goodreads { position: absolute; top: 175px; left: 50px; z-index: 1; }
+
+/*legacy projects css */
+#SideBar { float:right; width: 150px; background-color:#ccc; margin-left: 1em; padding: 0 1em }

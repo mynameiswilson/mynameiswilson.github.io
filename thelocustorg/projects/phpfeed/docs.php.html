@@ -1,0 +1,99 @@
+<div id="SideBar">
+<h1>nav</h1>
+<ul>
+<li><a href="index.php.html">home</a></li>
+<li><a href="overview.php.html">overview</a></li>
+<li><a href="demo.html">demo</a></li>
+<li><a href="docs.php.html">docs</a></li>
+<li><a href="download.php.html">download</a></li>
+</ul>
+
+<h2>changelog</h2>
+<ul>
+<li>php 4.2.1 DOM XML compliance</li>
+<li>command-line updating, or on-the-fly</li>
+</ul>
+</div>
+
+<h1>phpfeed</h1>
+
+<h2>docs</h2>
+
+<p>
+	<B>1. REQUIREMENTS</b><br>
+	<br>
+	<b>PHP</b><br>
+	<br>
+PHP 4.2.1 with DOM XML support enabled.  You can do this like so: './configure --with-dom'.  According to PHP's website, you'll need libxml 2.4.14 or greater.  Under RedHat/Mandrake this is a.k.a. libxml2.  You may be able to use earlier version of PHP, but the later the better.  If you do happen to get it working with an earlier version, <a href="mailto:ben[at]thelocust[dot]org">let me know</a>  <br><br><i>UPDATE</i> (2003.02.27): You should be using PHP 4.3.0, according to <a href="http://www.php.net/manual/en/ref.domxml.php">PHP's DOMXML reference</a>.  Thanks to <a href="http://www.yosch.org">Nicolas</a> for bringing this to my attention.<br>
+	<br>
+	<b>Webserver</b><br>
+	<br>
+	Apache or some other webserver (phpFeed has been tested on Apache 2.0.40 w/ PHP 4.3.0), though it may very well work with Roxen or MS IIS with PHP.<br>
+	<br>
+	<b>2. INSTALLATION</b><br>
+	<br>
+	<a href="download.php.html">Download</a> the latest and greatest, and untar/gzip it somewhere nice and safe.  Within the tar/gz, you will notice the demo.php, and the "includes" directory.  the demo.php is just an example of what you can do with phpFeed, check it out, see how phpFeed works within it, etc. Then you should check out the configuration file ('includes/phpFeed.config.xml') and set up some new feeds, etc.  Note that the first time you view the page, if you have chosen 'otfretrieval', the page will retrieve all the RDF/RSS's that are active in the configuration.  If you see nothing, check your error log, and make sure that includes/rdf is chmod'ed 777 or is owned by the user that the webserver runs under (on my system it's 'nobody', on some its 'wwwserver', etc).  Point being since the webserver is downloading the files, it needs to be able to write them somewhere.<br>
+	<br>
+	<b>3. CONFIGURATION</b><br>
+	<br>
+	phpFeed.config.xml is the sole configuration file for display options and retrieval of all of the news feeds.  The options are broken up into two categories -- "main configuration" and "newsfeed" configuration.<br>
+	<br>
+	<b>Main Configuration Options</b><br>
+	<br>
+	<b>feeddirectory</b> - direct, absolute path where you would like the feeds deposited make sure it exists, and is readable/writable by whomever the httpd daemon runs as (should be 'nobody', but is 'apache' or 'www-data' in some cases)<br>
+	<b>styleHTML</b>,<b>headerHTML</b>, <b>itemHTML</b>, <b>footerHTML</b> - the header, item and footer HTML that will be show when "showNewsFeed" is called.  check the examples for instructions on how to edit these correctly!  if you don't have these specified, then nothing will be shown (huzzah!)<br>
+  	<b>otfretrieve</b> - "on the fly" retrieval of new feeds.   this will allow the script to pull down new feeds when a user loads the page.  this can be VERY slow, especially if the feed isn't available! use at yer own risk 0 for inactive, 1 for active.  NOTE: if you turn this off, and then do your updating with the phpFeed.cron.php, then all the RDF's in the feeddirectory will be owned by root.  if you switch BACK to on-the-fly retrieval, then you MUST chown/chgrp/chmod all the files in the feeddirectory to nobody/nobody/0777, otherwise the webserver process will not be able to overwrite them with new ones.<br><br>
+	
+	<br>
+	<b>Newsfeed Configuration Options</b><br>
+	<br>
+	<b>url</b> - the link to the RDF/RSS that you are pulling - it should <i>hopefully</i> be correct<br>
+        <b>filename</b> -  the name that you would like this file to be called when it is stored in 'feeddirectory' (handy when a site names it's backend file 'backend.rdf' - WOW!  Original!<br>
+  	<b>interval</b> - the number of $interval (see below) that you'd like to wait before getting a fresh feed<br>
+  	<b>timeunit</b> - either H, M, S, or D (hours, minutes, seconds, days), and combined with $interval, will be the amount of time you would like to wait in order to get a new, fresh feed!<br>
+  	<b>showtitle</b> - show the title of the feed (in Slashdot's case, it's "Slashdot")<br>
+  	<b>showimage</b> - show the image that comes along with the feed.  some are ugly (segfault.org), some are nice (salon.com)<br>
+  	<b>showdesc</b> - show the description that comes along with the feed.  Slashdot's is "news for nerds, stuff that matters", and freshmeat.net's is some huge long position statement, blah blah.  obviously, we don't need to show that.<br>
+  	<b>showinput</b> - some feeds come along with "textinput" stuff - so you can setup a search form. show it?<br>
+	<b>isactive</b> - 0 for no, 1 for yes.  if this tag isn't present, assume active!<br>
+  	<b>debug</b> - 1 will show you a print_r (a good looking text representation of an array) of the items in the newsfeed<br>
+	<BR>
+	<b>Cron-Timed vs. On-The-Fly Retrieval</b><br>
+	<br>
+	phpFeed offers you two options for retrieving the RDF/RSS's -- cron-based (timed), and on-the-fly.  They are both viable option in their own way, but I thought a short discussion here would be best.<br>
+	<br>
+	<b>Cron-Retrieval</B><br>
+	<br>
+	First off, in order to do the cron-retrieval, you must have built PHP with the CLI (command line interface) (./configure --enable-cli), or have installed the PHP binary from an RPM or DEB or some such.  The PHP CLI binary will allow you to run PHP from the command line.  This is cool stuff, 'cause now you can do scripting with PHP outside of the browser.  It also allows you to run PHP scripts from the shell! I've included includes/phpFeed.cron.sh which could be put into /etc/cron.hourly or whatever, and would automagically update your feeds. make sure you edit the file and put in the correct phpFeed.config.xml path and all, and drop that file in /etc/cron.hourly.  Yay!Downsides: you have to have access to cron.  i think you can do personal cron stuff, but i'm not sure how.  Upsides: no long waits for your users.<br>
+	<br>
+	<b>On-The-Fly</b><br>
+	<br>
+	The updating for the feeds under the "On-The-Fly" configuration updates the feeds when the page is loaded by a browsing user.  this doesn't require cron, so it's easier to set-up, but it can take a while, and make the user think "wow, this site is too slow, i'm outta heeeeere".  consider this for sites were you can't cron stuff or for low-traffic personal sites.<br>
+	<br>
+	<b>4. CUSTOMIZING THE LOOK</b><br>
+	<br>
+	<b>Styles, Headers, Footers, etc.</b><br>
+	<br>
+	In the "Main Configuration Options" up there, you might have noticed the styleHTML, headerHTML, itemHTML and footerHTML options.  They point to the stylesheet, header, item body, and footer that will make up a newsfeed's look.  There are two example sets of styles, the CSS-DIV style, and the TABLED style.<br>
+	<br>
+	Demo.php is the file to use to view the CSS-DIV style, and demo-tables.php is the TABLED version.  The first thing you have to do is create a loop of some sort to display the newsfeeds.  This is showcased in both of the demo files, and you should get the hang of it pretty quickly.  Note the use of modulo arithmetic (the % operator) in the demo-tables.php file.  A VERY handy thing when it comes to row and paging math.  Learn it!  (3%2 = 1), (8%3 = 2).<br>
+        <BR>
+	<b>Anatomy of a Newsfeed Layout</b><br>
+	<br>
+	Each of the follow is represented in the phpFeed_style.inc.php with it's own CSS style.
+	<br>
+	<b>phpFeed</b> - the style for the entire feed.  you could put a border around it, or specify a width here, or font, whatever.<br>
+	<b>phpFeedImage</b> - the style for the enclosure around the image.<br>
+	<b>phpFeedTitle</b> - the style for the enclosure around the title, and the title text itself.<br>
+	<b>phpFeedTitleLink</b> - the style on the acutal href link to the Feed (e.g. http://slashdot.org).  These can also take :hover and :visited modifiers as well.<br>
+	<b>phpFeedDesc</b> - the style for the text that accompanies the FeedTitle (e.g. News for Nerds...)<br>
+	<b>phpFeedItems</b> - the style for the enclosure surrounding all of the items (ne' headlines).<br>
+	<b>phpFeedItemTitle</b> - the style for the enclosure surrounding the individual item<br>
+	<b>phpFeedItemTitleLink</b> - the style for the link on the ItemTitle, accepts :hover, :visited, etc.<br>
+	<b>phpFeedItemDesc</b> - the style for the enclosure and text of the ItemDesc (usually a synopsis of the story)<br>
+	<b>phpFeedFooter</b> - the style for the enclosure at the bottom of the feed (where the filedate is in the examples)<br>
+
+</p>	
+
+
+

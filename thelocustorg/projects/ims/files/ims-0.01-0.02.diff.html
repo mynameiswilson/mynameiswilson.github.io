@@ -1,0 +1,643 @@
+diff ims-0.01/ims.conf ims-0.02/ims.conf
+3,4c3,4
+< screenname = <whatever!>
+< password = <whatever!>
+---
+> screenname = somebody
+> password = whatever
+7a8,10
+> 
+> [modremem]
+> active = 1 
+Only in ims-0.02/: imspresence.py
+diff ims-0.01/ims.py ims-0.02/ims.py
+6,101d5
+< from toc import TocTalk
+< from string import upper
+< import os.path
+< import string
+< from threading import Thread
+< 
+< 
+< import sgmllib, string
+< 
+< #oh, this will strip HTML, or really any XML, i guess
+< #from a string.  AIM for Windows sends in HTML (joy!)
+< class StrippingParser(sgmllib.SGMLParser):
+< 
+<     # These are the HTML tags that we will leave intact
+<     valid_tags = ('b', 'a', 'i', 'br', 'p')
+< 
+<     from htmlentitydefs import entitydefs # replace entitydefs from sgmllib
+<     
+<     def __init__(self):
+<         sgmllib.SGMLParser.__init__(self)
+<         self.result = ""
+<         self.endTagList = [] 
+<         
+<     def handle_data(self, data):
+<         if data:
+<             self.result = self.result + data
+< 
+<     def handle_charref(self, name):
+<         self.result = "%s&#%s;" % (self.result, name)
+<         
+<     def handle_entityref(self, name):
+<         if self.entitydefs.has_key(name): 
+<             x = ';'
+<         else:
+<             # this breaks unstandard entities that end with ';'
+<             x = ''
+<         self.result = "%s&%s%s" % (self.result, name, x)
+<     
+<     def unknown_starttag(self, tag, attrs):
+<         """ Delete all tags except for legal ones """
+<         if tag in self.valid_tags:       
+<             self.result = self.result + '<' + tag
+<             for k, v in attrs:
+<                 if string.lower(k[0:2]) != 'on' and string.lower(v[0:10]) != 'javascript':
+<                     self.result = '%s %s="%s"' % (self.result, k, v)
+<             endTag = '</%s>' % tag
+<             self.endTagList.insert(0,endTag)    
+<             self.result = self.result + '>'
+<                 
+<     def unknown_endtag(self, tag):
+<         if tag in self.valid_tags:
+<             self.result = "%s</%s>" % (self.result, tag)
+<             remTag = '</%s>' % tag
+<             self.endTagList.remove(remTag)
+< 
+<     def cleanup(self):
+<         """ Append missing closing tags """
+<         for j in range(len(self.endTagList)):
+<                 self.result = self.result + self.endTagList[j]    
+<         
+< 
+< 
+< # the AIM bot class.  for IMS, it only needs a messageQueue list
+< # each message in the queue is just a string like such - "service:screenname:message"
+< # right now, the only service supported is AIM, so messages should be as such -
+< # "AIM:screenname:hello! how are you!"
+< class TocBot(TocTalk):
+<       import string
+< 
+<       messageQueue = []
+< 
+<       #whenever someone IMs us
+<       def on_IM_IN(self,data):
+< 	  self.queueMessage(data)
+< 						  
+<       def queueMessage(self,data):
+< 	  dataComponents = data.split(":")
+< 	  screenname = dataComponents[0]
+< 	  message = self.strip( ":".join(dataComponents[2:]) )
+< 	  self.messageQueue.append('AIM:' + screenname + ':' + message)
+< 
+<       def queueLength(self):
+<           return len(self.messageQueue)	
+< 
+< 
+<       def sendMessage(self,screenname,message):
+< 	  self.do_SEND_IM(screenname, message)
+< 
+<       def strip(self,s):
+< 	  """ Strip illegal HTML tags from string s """
+< 	  parser = StrippingParser()
+< 	  parser.feed(s)
+< 	  parser.close()
+< 	  parser.cleanup()
+< 	  return parser.result
+< 
+102a7,10
+> import sys, os.path, string, time, re
+> from threading import Thread
+> from tocbot import TocBot
+> from imspresence import IMSPresence
+107a16
+>       presences = {}
+116a26,32
+> 	  self.name = "instantManservant"
+> 	  self.desc = "instant message bot framework!" 
+> 	  self.version = "0.3"
+> 	  self.date    = "2002.08.21"
+> 	  self.author  = "ben wilson"
+> 	  self.url     = "http://thelocust.org/projects/ims"
+> 
+127,130c43,50
+< 	  self.mainLoop()
+< 
+<       def __del__(self):
+< 	  self.debug("shutting down bot thread!")
+---
+> 	  try:
+> 	  	  self.mainLoop()
+> 	  except KeyboardInterrupt:
+> 		 self.shutdown()
+> 
+>       def shutdown(self):
+> 	  self.debug("shutdown: shutting down bot thread!")
+> 	  self.myBot.shutdown()
+131a52
+> 
+133c54
+< 	      self.debug("stopping module " + module)
+---
+> 	      self.debug("shutdown: stopping module " + module)
+135c56
+< 	      self.debug("stopping thread " + module)
+---
+> 	      self.debug("shutdown: stopping thread " + module)
+136a58,61
+> 	  
+> 	  self.debug("shutdown: goodbye! thanks for using " + self.name + " " + self.version)
+> 	  sys.exit()
+> 
+269c194,198
+< 		if self.myBot.queueLength() > 0:
+---
+> 		
+> 		  #check to see if we have a message on the line
+> 		  if self.myBot.queueLength() > 0:
+> 
+> 		   #pop that message into a variable
+270a200
+> 
+272a203,204
+> 
+> 		   # split the message into it's components (remember- service:sname:message)
+276a209,216
+> 
+> 		   if self.presences.has_key(string.upper(screenName)):
+> 		      self.presences[string.upper(screenName)].logMessage(message)
+> 		   else:
+> 			self.presences[string.upper(screenName)] = IMSPresence(service,screenName)		   
+> 			self.presences[string.upper(screenName)].logMessage(message)		   
+> 
+> 		   # split the message itself into word
+278a219
+> 		   # attempt to use the first word in the message as the handler
+281a223
+> 		   # if no handler module found, then IMS will attempt to handle
+284a227,228
+> 
+> 		   # if we've found a handler module, send the message to it
+290c234,235
+< 		for module in self.modules:
+---
+> 		  # send messages for each of the modules
+> 		  for module in self.modules:
+300a246
+> 
+314a261,266
+> 	     elif cmd == "about":
+> 	        self.sendMessage( service,screenName,self.printIMSAbout() )
+> 	     elif cmd == "whoami":
+> 	        self.sendMessage( service,screenName,self.printIMSWhoAmI(screenName) )
+> 	     elif cmd == "mode":
+> 	        self.sendMessage( service,screenName,self.handleMode(screenName, messageWords) )
+321a274,310
+>       def handleMode(self, screenName, messageWords):
+> 	  modeStr = ""   
+> 
+> 	  if self.presences.has_key(string.upper(screenName)):
+> 	     myPres = self.presences[string.upper(screenName)]
+> 
+> 	     if len(messageWords) > 1:
+> 	        # if the message sent was "mode off", then turn mode handling off
+> 		if string.lower(messageWords[1]) == "off":
+> 		   # switch mode to OFF
+> 		   self.debug("switching mode to OFF for " + screenName)
+> 		   myPres.modeEnabled = 0
+> 		   myPres.modeCurrent = ""
+> 
+> 		# else if the message they've sent is "mode $modulename" then enable 
+> 		# mode handling for that module
+> 		else:
+> 			if self.findModuleByTrigger(messageWords[1]):
+> 			   # switch mode to whatever module they've chosen
+> 			   self.debug("switching mode to " + messageWords[1] + " for " + screenName)
+> 			   modeStr = modeStr + "\nChanging mode to " + messageWords[1]
+> 			   myPres.modeEnabled = 1
+> 			   myPres.modeCurrent = string.lower(messageWords[1])
+> 			else:
+> 			   modeStr = modeStr + "\nCould not find suitable module for " + messageWords[1]
+> 
+> 	     if myPres.modeEnabled == 1:
+> 		currentMode = myPres.modeCurrent
+> 		modeStr = modeStr + "\nCurrent Mode: " + str(myPres.modeCurrent)
+> 	     else:
+> 		modeStr = modeStr + "\nCurrent Mode: Off"
+> 
+> 	  else:
+> 		modeStr = modeStr + "\nYou do not have an existing presence with me."
+> 
+> 	  return modeStr
+> 
+323c312,341
+< 	  return "InstantManservant Help!\nCommands: \nhelp - this help\nmodules - list modules\n$modulename help - module specific help"
+---
+> 	  helpStr = ""
+> 	  helpStr = helpStr + "\n" + self.name + " v" + self.version
+> 	  helpStr = helpStr + "\ncommands:"
+> 	  helpStr = helpStr + "\nhelp    - this help"
+> 	  helpStr = helpStr + "\nabout    - about " + self.name
+> 	  helpStr = helpStr + "\nmodules - list of modules"
+> 	  helpStr = helpStr + "\nwhoami - information about you"
+> 	  helpStr = helpStr + "\nmode - mode stuff"
+> 	  helpStr = helpStr + "\n$modulename help - modulename help"
+> 
+> 	  return helpStr
+> 
+> 
+>       def printIMSWhoAmI(self,screenname):
+> 	  if self.presences.has_key(string.upper(screenname)):
+> 		myPres = self.presences[string.upper(screenname)]
+> 		initTime = myPres.initTime
+> 		lastMessage = myPres.messageLog[len(myPres.messageLog)-1]
+> 
+> 		meStr = ""
+> 		meStr = meStr + "\nGreetings, " + screenname	     
+> 		meStr = meStr + "\nWe initiated this current conversation at " + str(time.ctime(myPres.initTime))
+> 		meStr = meStr + "\nThe last thing you said was:"
+> 		meStr = meStr + "\n" + myPres.messageLog[len(myPres.messageLog)-1]
+> 	  else:
+> 		meStr = ""
+> 		meStr = meStr + "\nI don't think I've spoken to you before!"
+> 		meStr = meStr + "\nTry having a conversation with me, and then I'll tell you about yourself :) "
+> 
+> 	  return meStr
+326c344,345
+< 	  moduleList = "\nRegistered Modules:"
+---
+> 	  moduleList = "\n" + self.name + " v" + self.version 
+> 	  moduleList = "\nregistered modules:"
+331a351,360
+> 
+>       def printIMSAbout(self):
+> 	  aboutStr = ""
+> 	  aboutStr = aboutStr + "\n" + self.name 
+> 	  aboutStr = aboutStr + "\n" + self.desc
+> 	  aboutStr = aboutStr + "\nver:" + self.version + " date:" + self.date
+> 	  aboutStr = aboutStr + "\nby " + self.author
+> 	  aboutStr = aboutStr + "\n" + self.url
+> 	  return aboutStr
+> 
+Only in ims-0.02/: modremem.py
+Only in ims-0.02/: tocbot.py
+diff ims-0.01/toc.py ims-0.02/toc.py
+2c2
+< # Py-TOC 1.0 
+---
+> # Py-TOC 2.3
+7c7
+< DEBUG = 1
+---
+> _VERSION = "2.3"
+9a10
+> import select
+13a15,18
+> import time
+> 
+> import thread
+> import threading
+18a24,29
+> class TOCError(Exception): 
+> 	pass
+> 
+> class TOCDisconnectError(Exception): 
+> 	pass
+> 
+24c35
+< 			self._info = "I'm running the Python TOC Module by James Turner <jamwt@jamwt.com>"
+---
+> 			self._info = "I'm running the Python TOC Module by Jamie Turner <jamwt@jamwt.com>"
+26,28c37,43
+< 			self._dir = dir(self)
+< 			
+< 			self.logonNickPassError = "Incorrect Nickname/Password Entered!"
+---
+> 			self._logfd = sys.stdout
+> 			self._debug = 1
+> 			self._running = 0
+> 			self._ignore = 0
+> 			self._tsem = threading.Semaphore()
+> 			self.build_funcs()
+> 
+29a45,52
+> 	def build_funcs(self):
+> 		self._dir = []
+> 		for item in dir(self.__class__):
+> 			if ( type( eval("self.%s" % item)) == type(self.__init__) and
+> 			item[:3] == "on_" ):
+> 				self._dir.append(item)
+> 
+> 			
+31,32c54,59
+< 			self.connect()
+< 			self.process_loop()
+---
+> 		self.connect()
+> 		self._running = 1
+> 		self.process_loop()
+> 
+> 	def start(self):
+> 		pass
+39c66
+< 			ferror("FATAL:  Couldn't create a socket")
+---
+> 			raise TOCError, "FATAL:  Couldn't create a socket"
+45c72
+< 			ferror("FATAL: Could not connect to TOC Server")
+---
+> 			raise TOCDisconnectError, "FATAL: Could not connect to TOC Server"
+51c78
+< 			ferror("FATAL: Couldn't send FLAPON!")
+---
+> 			raise TOCError, "FATAL: Couldn't send FLAPON!"
+72c99
+< 
+---
+> 	
+84c111,118
+< 		derror( "SEND : \'%r\'" % data )
+---
+> 		if len(data) >= 2048:
+> 			raise TOCError, "TOC data with protocol overhead cannot exceed 2048 bytes."
+> 
+> 		self.derror( "SEND : \'%r\'" % data )
+> 		
+> 
+> 		# in case we're threading
+> 		self._tsem.acquire()
+85a120
+> 		self._tsem.release()
+90c125
+< 			ferror("FATAL: Couldn't send all data to TOC Server\n")
+---
+> 			raise TOCError, "FATAL: Couldn't send all data to TOC Server\n"
+109a145
+> 			self.handle_event(event)
+111c147
+< 			derror( "RECV : %r" % event[1] )
+---
+> 	def handle_event(self,event):
+113,117c149
+< 			#else, fig out what to do with it
+< 			#special case-- login
+< 			if event[0] == 1:
+< 				self.start_log_in()
+< 				continue
+---
+> 		self.derror( "RECV : %r" % event[1] )
+119,121c151,160
+< 			if not event[1].count(":"):
+< 				werror("ERROR: Parsing problem on input from server.. no colon")
+< 				continue
+---
+> 		#else, fig out what to do with it
+> 		#special case-- login
+> 		if event[0] == 1:
+> 			self.start_log_in()
+> 			return
+> 
+> 		if not event[1].count(":"):
+> 			data = ""
+> 
+> 		else:
+126,128c165,168
+< 			# our handler
+< 			if ( ("c_%s" % id ) in self._dir and type(eval("self.c_%s" % id)) == type(self.__init__) ):
+< 				exec ( "self.c_%s(id,data)" % id )
+---
+> 		#handle manually now
+> 		if id == "SIGN_ON":
+> 			self.c_SIGN_ON(id,data)
+> 			return
+130,132c170,172
+< 			#their imp
+< 			elif ( ("on_%s" % id ) in self._dir and type(eval("self.on_%s" % id)) == type(self.__init__) ):
+< 				exec ( "self.on_%s(data)" % id )
+---
+> 		if id == "ERROR":
+> 			self.c_ERROR(id,data)
+> 			return
+134,135c174,179
+< 			else:
+< 				werror("INFO : Received unimplemented '%s' id" % id)
+---
+> 		#their imp
+> 		if ("on_%s" % id ) in self._dir:
+> 			exec ( "self.on_%s(data)" % id )
+> 
+> 		else:
+> 			self.werror("INFO : Received unimplemented '%s' id" % id)
+147,150c191,198
+< 		data = self._socket.recv(buflen)
+< 		if data == "":
+< 			self.err_disconnect()
+< 			return
+---
+> 		dtemp = self._socket.recv(buflen)
+> 		data = dtemp
+> 		while len(data) != buflen:
+> 			if dtemp == "":
+> 				self.err_disconnect()
+> 				return
+> 			dtemp = self._socket.recv(buflen - len(data))
+> 			data = data + dtemp
+153a202,228
+> 	def thread_recv_events(self):
+> 		while self._running:
+> 			rfd,dc,dc = select.select([self._socket],[],[])
+> 			if rfd == []:
+> 				continue
+> 			try:
+> 				header = self._socket.recv(6) 
+> 			except:
+> 				self.err_disconnect()
+> 
+> 			if header == "":
+> 				self.err_disconnect()
+> 
+> 			(marker,mtype,seq,buflen) = struct.unpack("!sBhh",header)
+> 
+> 			#get the info
+> 			dtemp = self._socket.recv(buflen)
+> 			data = dtemp
+> 			while len(data) != buflen:
+> 				if dtemp == "":
+> 					self.err_disconnect()
+> 				dtemp = self._socket.recv(buflen - len(data))
+> 				data = data + dtemp
+> 
+> 			if not self._ignore:
+> 				self.handle_event([mtype,data])
+> 
+155,156c230,231
+< 		sys.stdout.write("ERROR: We seem to have been disconnected from the TOC server.\n")
+< 		sys.exit(0)
+---
+> 		self.werror( "INFO: Disconnected!\n" )
+> 		raise TOCDisconnectError, "FATAL: We seem to have been disconnected from the TOC server.\n"
+164c239
+< 			data = int (data[:data.find(":")])
+---
+> 			dt = int (data[:data.find(":")])
+166c241
+< 			data = int(data) # let's get an int outta it
+---
+> 			dt = int(data) # let's get an int outta it
+168,170c243,244
+< 		if data == 980:
+< 			raise self.logonNickPassError
+< 			ferror("FATAL: Couldn't sign on; Incorrect nickname/password combination")
+---
+> 		if dt == 980:
+> 			raise TOCError, "FATAL: Couldn't sign on; Incorrect nickname/password combination"
+172,173c246,247
+< 		if data == 981:
+< 			ferror("FATAL: Couldn't sign on; The AIM service is temporarily unavailable")
+---
+> 		if dt == 981:
+> 			raise TOCError, "FATAL: Couldn't sign on; The AIM service is temporarily unavailable"
+175,176c249,250
+< 		elif data == 982:
+< 			ferror("FATAL: Couldn't sign on; Your warning level is too high")
+---
+> 		elif dt == 982:
+> 			raise TOCError, "FATAL: Couldn't sign on; Your warning level is too high"
+178,179c252,253
+< 		elif data == 983:
+< 			ferror("FATAL: Couldn't sign on; You have been connecting and disconnecting too frequently")
+---
+> 		elif dt == 983:
+> 			raise TOCError, "FATAL: Couldn't sign on; You have been connecting and disconnecting too frequently"
+181,182c255,256
+< 		elif data == 989:
+< 			ferror("FATAL: Couldn't sign on; An unknown error occurred")
+---
+> 		elif dt == 989:
+> 			raise TOCError, "FATAL: Couldn't sign on; An unknown error occurred"
+186,187c260,261
+< 			#try to let further imp handle
+< 			if ( ("on_%s" % id ) in self._dir and type(eval("self.on_%s" % id)) == type(self.__init__) ):
+---
+> 			# try to let further implementation handle it
+> 			if ("on_%s" % id ) in self._dir:
+190c264
+< 				werror("ERROR: The TOC server sent an unhandled error code: #%d" % data)
+---
+> 				self.werror("ERROR: The TOC server sent an unhandled error string: %s" % data)
+193c267
+< 		self.flap_to_toc(2,"toc_add_buddy jamwt") # needs to start up corectly
+---
+> 		self.flap_to_toc(2,"toc_add_buddy %s" % self.normalize(self._nick)) # needs to start up corectly
+195a270
+> 		self.start()
+209,211c284,288
+< 	def do_SEND_IM(self,user,message):
+< 		self.flap_to_toc(2,"toc_send_im %s %s" % ( self.normalize(user), self.encode(message) )  )
+< 
+---
+> 	def do_SEND_IM(self,user,message,autoaway=0):
+> 		sendmessage = "toc_send_im %s %s" % ( self.normalize(user), self.encode(message) )
+> 		if autoaway:
+> 			sendmessage = sendmessage + " auto"
+> 		self.flap_to_toc(2, sendmessage)
+214c291
+< 		self.flap_to_toc(2,"toc_add_buddy %s" % " ".join(self.normbuds(buddies) ) )
+---
+> 		self.flap_to_toc(2,"toc_add_buddy %s" % self.normbuds(buddies) )
+217c294
+< 		self.flap_to_toc(2,"toc_add_permit %s" % " ".join(self.normbuds(buddies) ) )
+---
+> 		self.flap_to_toc(2,"toc_add_permit %s" % self.normbuds(buddies) )
+220c297
+< 		self.flap_to_toc(2,"toc_add_deny %s" % " ".join(self.normbuds(buddies) ) )
+---
+> 		self.flap_to_toc(2,"toc_add_deny %s" % self.normbuds(buddies) )
+223c300
+< 		self.flap_to_toc(2,"toc_remove_buddy %s" % " ".join(self.normbuds(buddies) ) )
+---
+> 		self.flap_to_toc(2,"toc_remove_buddy %s" % self.normbuds(buddies) )
+276c353,399
+< 	#todo more later!
+---
+> 	# error funcs
+> 	def werror(self,errorstr):
+> 		if self._debug:
+> 			self._logfd.write("(%s) %s\n"% (self._nick,errorstr))
+> 
+> 	def derror(self,errorstr):
+> 		if self._debug > 1:
+> 			self._logfd.write("(%s) %s\n"% (self._nick,errorstr))
+> 
+> class BotManagerError(Exception):
+> 	pass
+> 
+> class BotManager:
+> 	def __init__(self):
+> 		self.bots = {}
+> 
+> 	def addBot(self,bot,botref,go=1,reconnect=1,delay=30):
+> 		if self.bots.has_key(botref):
+> 			raise BotManagerError, "That botref is already registered"
+> 
+> 		self.bots[botref] = bot
+> 		self.bots[botref]._reconnect = reconnect
+> 		self.bots[botref]._delay = delay
+> 		if go:
+> 			self.botGo(botref)
+> 
+> 	def botGo(self,botref):
+> 		if not self.bots.has_key(botref):
+> 			raise BotManagerError, "That botref has not been registered"
+> 		thread.start_new_thread(self._dispatcher,(self.bots[botref],))
+> 
+> 	def botStop(self,botref):
+> 		if not self.bots.has_key(botref):
+> 			raise BotManagerError, "That botref has not been registered"
+> 		self.bots[botref]._running = 0
+> 		self.bots[botref]._socket.close()
+> 
+> 	def botPause(self,botref,val=1):
+> 		if not self.bots.has_key(botref):
+> 			raise BotManagerError, "That botref has not been registered"
+> 		self.bots[botref]._ignore = val
+> 
+> 	def getBot(self,botref):
+> 		if not self.bots.has_key(botref):
+> 			raise BotManagerError, "That botref has not been registered"
+> 		return self.bots[botref]
+> 		
+278,288c401,418
+< def ferror(errorstr):
+< 	sys.stderr.write("%s\n"%errorstr)
+< 	sys.exit(1)
+< 
+< def werror(errorstr):
+< 	if DEBUG:
+< 		sys.stdout.write("%s\n"%errorstr)
+< 
+< def derror(errorstr):
+< 	if DEBUG > 1:
+< 		sys.stdout.write("%s\n"%errorstr)
+---
+> 	def _dispatcher(self,bot):
+> 		while 1:
+> 			try:
+> 				bot.connect()
+> 				bot._running = 1
+> 				bot.thread_recv_events()
+> 			except TOCDisconnectError:
+> 				if not bot._reconnect or not bot._running:
+> 					break
+> 				bot._running = 0
+> 				time.sleep(bot._delay) # then we reconnect
+> 			else:
+> 				break
+> 		thread.exit()
+> 
+> 	def wait(self):
+> 		while 1:
+> 			time.sleep(2000000) # not coming back from this...

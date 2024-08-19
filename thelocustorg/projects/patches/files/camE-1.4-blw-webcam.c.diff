@@ -1,0 +1,675 @@
+*** camE-1.4/webcam.c	Tue Feb 25 08:24:56 2003
+--- camE-blw/webcam.c	Wed Mar 26 00:30:45 2003
+***************
+*** 8,13 ****
+--- 8,14 ----
+   */
+  
+  #include <stdio.h>
++ #include <ctype.h>
+  #include <stdlib.h>
+  #include <string.h>
+  #include <unistd.h>
+***************
+*** 42,47 ****
+--- 43,57 ----
+  void log(char *fmt,
+           ...);
+  
++ int filelist[512];
++ //file_string will be like "webcam"
++ char file_string[512] = "";
++ //ext_string will be like "jpg" if the ftp_file = "webcam.jpg"
++ char ext_string[512] = "";
++ int filelist_counter = 0;
++ int ftp_file_exists = 0;
++ int filelist_filled = 0;
++ 
+  char *ftp_host = "www";
+  char *ftp_user = "webcam";
+  char *ftp_pass = "xxxxxx";
+***************
+*** 100,105 ****
+--- 110,131 ----
+  int archive_thumbnails_create = 0;	/* default is not to create archive thumbnails */
+  int archive_thumbnails_width = 120;
+  int archive_thumbnails_height = 90;
++ 
++ /* 2003.02.11 ben wilson (ben[at]thelocust[dot]org) */
++ 
++ char *remote_thumbnail_temp_file = NULL;
++ char *remote_thumbnail_file = NULL;
++ char *remote_thumbnail_offline_image = NULL;
++ char *remote_thumbnail_dir = NULL;
++ int remote_thumbnail_create = 0;	/* default is not to create remote thumbnails */
++ int remote_thumbnail_width = 120;
++ int remote_thumbnail_height = 90;
++ 
++ int remote_archive_active = 0;
++ int remote_archive_total = 10;
++ 
++ 
++ 
+  char *grab_blockfile = NULL;
+  char *upload_blockfile = NULL;
+  char *grab_postprocess = NULL;
+***************
+*** 737,742 ****
+--- 763,790 ----
+  }
+  
+  void
++ create_thumbnail(Imlib_Image im)
++ {
++   Imlib_Image remote_thumbnail_image;
++ 
++   if (remote_thumbnail_create && remote_thumbnail_width && remote_thumbnail_height) {
++ 
++       remote_thumbnail_image =
++         gib_imlib_create_cropped_scaled_image(im, 0, 0,
++                                               gib_imlib_image_get_width(im),
++                                               gib_imlib_image_get_height(im),
++                                               remote_thumbnail_width,
++                                               remote_thumbnail_height, 1);
++ 
++       save_image(remote_thumbnail_image, remote_thumbnail_temp_file);
++       gib_imlib_free_image_and_decache(remote_thumbnail_image);
++     }
++ }
++ 
++ 
++ 
++ 
++ void
+  log(char *fmt,
+      ...)
+  {
+***************
+*** 891,896 ****
+--- 939,1031 ----
+      v_force = 0;
+  }
+  
++ int get_remote_archive_list (void *ptr, size_t size, size_t nmemb, void *data) {
++     
++     char filename[512];
++   char remarchnum[512] = "";
++   int offset=0;
++   int remarchisnum = 1;
++   int i=0;
++   int j=0;
++   char proto[512] ="";
++   char assend[512] = "";
++   
++   if (filelist_filled == 0) { memset (filelist, 0, 512); }  
++   
++   while (offset < strlen (ptr)) {
++     //get the filename from the list by sscanf'ing for anything before
++     //the \n in the list
++     
++     //if we don't find that a line ends with \n, then break, and attempt to 
++     //go on to the next ptr+offset.  however, this probably means EOF
++     if (!sscanf (ptr+offset, "%[^\n]\n", filename)) break;
++     
++     //if we've found webcam.jpg, set ftp_file_exists to "TRUE"
++     //so we know to rename it to webcam-1.jpg later
++     if (strncmp(filename,ftp_file,strlen(ftp_file)) == 0) { ftp_file_exists = 1; break; }
++     
++     //well, first we need to break webcam-9.jpg into just 9.jpg
++     //create the sscanf string (proto) ie. "webcam-%s" to get 9.jpg or whatever
++     sprintf(proto,"%s-%%s",file_string);
++     
++     //scan the filename "webcam-9.jpg" with the prototype "webcam-%s" to get
++     //"9.jpg", or whatever comes after the dash.  i've named this 'assend'
++     sscanf(filename,proto,assend);
++ 
++     //if we've found something...
++     //(the below code was based on an original by nrimam0[at]pop[dot]uky[dot]edu, 
++     // thanks najati!
++     if (strlen(assend)) { 
++       i = strlen (assend);
++       //search backwards until we hit a '.'
++       while (assend[i] != '.') i--;
++       //copy whatever comes before the '.' in 9.jpg to remarchnum, which
++       //is the number of remote archive filename we've just found! huzzah!
++       memset(remarchnum,0,512);
++       remarchisnum = 1;
++       strncpy (remarchnum, assend,i);
++                   
++       //make sure that the remarchnum that we've captured is numeric
++       //webcam-thumb.jpg could be out there, and that just won't do..
++       for (i=0;i<strlen(remarchnum);i++) {
++         if(!isdigit(remarchnum[i])) {
++           remarchisnum = 0;
++         }
++       }
++ 
++       //if the number we've found is good, then add it to the filelist
++       if (remarchisnum) {
++         //mark the appropriate filelist slot as "TRUE"
++         j = atoi(remarchnum);
++         filelist[j] = 1;
++         filelist_filled = 1;
++         /*counter++;
++         filelist_counter = counter;*/
++       }
++     }
++     //clear out the assend of the filename
++     strcpy(assend,"");
++     
++     offset+=strlen (filename) + 1;
++ 
++ 
++    
++   }
++ /*  printf("setting filelistcounter\n");
++   
++   counter = 0;*/
++ 
++   /*for (i=0;i<remote_archive_total;i++)
++     printf("filelist %i: %i\n",i,filelist[i]);*/
++   
++   register int realsize = size * nmemb;
++   
++   return realsize;
++ }
++ 
++ 
++ 
++ 
+  
+  /* upload local to tmp then MV to remote */
+  void
+***************
+*** 900,926 ****
+  {
+    char buf[2096];
+    FILE *infile;
+    CURLcode ret;
+    struct stat st;
+    static struct curl_slist *post_commands = NULL;
+    char *passwd_string, *url_string;
+! 
+    infile = fopen(local, "r");
+! 
+    if (!infile) {
+      log("camE: Couldn't open temp file to upload it\n");
+      perror("ftp_upload(): ");
+      return;
+    }
+    fstat(fileno(infile), &st);
+  
+    if (!post_commands) {
+      snprintf(buf, sizeof(buf), "rnfr %s", tmp);
+      post_commands = curl_slist_append(post_commands, buf);
+      snprintf(buf, sizeof(buf), "rnto %s", remote);
+      post_commands = curl_slist_append(post_commands, buf);
+    }
+! 
+    /* init the curl session */
+    if (connections < 1) {
+      curl_handle = curl_easy_init();
+--- 1035,1169 ----
+  {
+    char buf[2096];
+    FILE *infile;
++   FILE *infile_thumb;
+    CURLcode ret;
+    struct stat st;
++   struct stat st_thumb;
+    static struct curl_slist *post_commands = NULL;
+    char *passwd_string, *url_string;
+!   int i=0;
+    infile = fopen(local, "r");
+!   
+    if (!infile) {
+      log("camE: Couldn't open temp file to upload it\n");
+      perror("ftp_upload(): ");
+      return;
+    }
+    fstat(fileno(infile), &st);
++   
++   
++   if (remote_thumbnail_create && remote_thumbnail_temp_file) {
++     
++     infile_thumb = fopen(remote_thumbnail_temp_file,"r");
++     if (!infile_thumb) {
++       log("camE: Couldn't open remote thumbnail temp file to upload it\n");
++       perror("ftp_upload(): ");
++       return;
++     }
++     fstat(fileno(infile_thumb), &st_thumb);
++   }
+  
+    if (!post_commands) {
++   
++     if (remote_thumbnail_create && remote_thumbnail_file) {
++         curl_handle = curl_easy_init();
++         if (ftp_debug)
++ 	  curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1);
++         else
++ 	  curl_easy_setopt(curl_handle, CURLOPT_MUTE, 1);
++         passwd_string = gib_strjoin(":", ftp_user, ftp_pass, NULL);
++         curl_easy_setopt(curl_handle, CURLOPT_USERPWD, passwd_string);
++         url_string = gib_strjoin("/", "ftp:/", ftp_host, ftp_dir, remote_thumbnail_file, NULL);
++         curl_easy_setopt(curl_handle, CURLOPT_UPLOAD, 1);
++         curl_easy_setopt(curl_handle, CURLOPT_URL, url_string);
++         curl_easy_setopt(curl_handle, CURLOPT_INFILE, infile_thumb);
++         curl_easy_setopt(curl_handle, CURLOPT_INFILESIZE, st_thumb.st_size);
++         ret = curl_easy_perform(curl_handle);
++       
++         if (ret) {
++           fprintf(stderr, "\ncamE: error sending via ftp: ");
++           log("camE error: ");
++          }
++          curl_easy_cleanup(curl_handle);
++         curl_handle = NULL;
++         post_commands = NULL;
++     }
++   
++   
++   
++     /* 2003.02.11 ben wilson (ben[at]thelocust[dot]org) */
++     if (remote_archive_active && remote_archive_total) {
++         
++         /* retrieve FTP LIST, using another CURL session */  
++         post_commands = NULL;
++         curl_handle = curl_easy_init();
++         passwd_string = gib_strjoin(":", ftp_user, ftp_pass, NULL);
++         curl_easy_setopt(curl_handle, CURLOPT_USERPWD, passwd_string);
++         //free(passwd_string);
++ 
++         /* set URL to save to */
++         url_string = gib_strjoin("/", "ftp:/", ftp_host, ftp_dir, "/",  NULL);
++         curl_easy_setopt(curl_handle, CURLOPT_URL, url_string);
++         /* shut up completely */
++         if (ftp_debug)
++ 	  curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1);
++         else
++ 	  curl_easy_setopt(curl_handle, CURLOPT_MUTE, 1);
++ 
++         if (!ftp_passive)
++ 	  curl_easy_setopt(curl_handle, CURLOPT_FTPPORT, ftp_interface);
++       
++         curl_easy_setopt(curl_handle, CURLOPT_FTPLISTONLY, 1);
++         
++         //this will capture a list of existing webcam-X.jpg files,
++         //because if you attempt to rename a file that doesn't exist, CURL will
++         //b0rk!  so we must know if the webcam-X.jpg file exists.
++         curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, get_remote_archive_list);
++         curl_easy_perform(curl_handle);
++ 
++         curl_easy_cleanup(curl_handle);
++         curl_handle = NULL;
++         curl_slist_free_all(post_commands);
++         post_commands = NULL;
++          //return the file_exists bit to false.  
++         
++         /* END FTP LIST */
++ 
++       //queue up the curl commands to move webcam-9.jpg to webcam-10.jpg...
++       //until we finally get down to moving webcam.jpg webcam-1.jpg
++       
++       for (i=remote_archive_total;i>0;i--) {
++         //if we've found the last shot exists, delete it
++         if (i == remote_archive_total && filelist[i] == 1) {
++           snprintf(buf, sizeof(buf), "DELE %s-%i.%s", file_string, i, ext_string);
++           post_commands = curl_slist_append(post_commands, buf);
++         } else if (filelist[i] == 1) {
++           //else, rename webcam-9.jpg to webcam-10.jpg
++           snprintf(buf, sizeof(buf), "RNFR %s-%i.%s", file_string, i, ext_string);
++           post_commands = curl_slist_append(post_commands, buf);
++           snprintf(buf, sizeof(buf), "RNTO %s-%i.%s", file_string, i+1, ext_string);
++           post_commands = curl_slist_append(post_commands, buf);
++         }
++       }
++       //rename webcam.jpg to webcam-1.jpg
++       if (ftp_file_exists == 1) {
++         snprintf(buf, sizeof(buf), "RNFR %s", ftp_file);
++         post_commands = curl_slist_append(post_commands, buf);
++         snprintf(buf, sizeof(buf), "RNTO %s-%i.%s", file_string, 1, ext_string);
++         post_commands = curl_slist_append(post_commands, buf);
++       }
++       
++       ftp_file_exists = 0;
++       filelist_filled = 0;
++     } //remote archive
++   
++     //rename from uploading.jpg to webcam.jpg
+      snprintf(buf, sizeof(buf), "rnfr %s", tmp);
+      post_commands = curl_slist_append(post_commands, buf);
+      snprintf(buf, sizeof(buf), "rnto %s", remote);
+      post_commands = curl_slist_append(post_commands, buf);
+    }
+!   
+    /* init the curl session */
+    if (connections < 1) {
+      curl_handle = curl_easy_init();
+***************
+*** 928,939 ****
+  
+      passwd_string = gib_strjoin(":", ftp_user, ftp_pass, NULL);
+      curl_easy_setopt(curl_handle, CURLOPT_USERPWD, passwd_string);
+!     free(passwd_string);
+  
+      /* set URL to save to */
+      url_string = gib_strjoin("/", "ftp:/", ftp_host, ftp_dir, tmp, NULL);
+      curl_easy_setopt(curl_handle, CURLOPT_URL, url_string);
+!     free(url_string);
+  
+      /* no progress meter please */
+      curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1);
+--- 1171,1187 ----
+  
+      passwd_string = gib_strjoin(":", ftp_user, ftp_pass, NULL);
+      curl_easy_setopt(curl_handle, CURLOPT_USERPWD, passwd_string);
+!     //free(passwd_string);
+  
+      /* set URL to save to */
+      url_string = gib_strjoin("/", "ftp:/", ftp_host, ftp_dir, tmp, NULL);
+      curl_easy_setopt(curl_handle, CURLOPT_URL, url_string);
+!     
+!     
+!     // 2003.02.12 ben[at]thelocust[dot]org  
+!     //according to the curl docs, you shouldn't free the url_string, 
+!     //as curl doesn't copy it (curl 7.10.3 at least)
+!     //free(url_string);
+  
+      /* no progress meter please */
+      curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1);
+***************
+*** 950,960 ****
+        curl_easy_setopt(curl_handle, CURLOPT_FTPPORT, ftp_interface);
+  
+      curl_easy_setopt(curl_handle, CURLOPT_POSTQUOTE, post_commands);
+    }
+! 
+    curl_easy_setopt(curl_handle, CURLOPT_INFILE, infile);
+    curl_easy_setopt(curl_handle, CURLOPT_INFILESIZE, st.st_size);
+  
+    /* get it! */
+    ret = curl_easy_perform(curl_handle);
+    /* TODO check error */
+--- 1198,1210 ----
+        curl_easy_setopt(curl_handle, CURLOPT_FTPPORT, ftp_interface);
+  
+      curl_easy_setopt(curl_handle, CURLOPT_POSTQUOTE, post_commands);
++     
+    }
+!   
+    curl_easy_setopt(curl_handle, CURLOPT_INFILE, infile);
+    curl_easy_setopt(curl_handle, CURLOPT_INFILESIZE, st.st_size);
+  
++     
+    /* get it! */
+    ret = curl_easy_perform(curl_handle);
+    /* TODO check error */
+***************
+*** 975,981 ****
+          log("Couldn't resolve proxy\n");
+          break;
+        case CURLE_COULDNT_RESOLVE_HOST:
+!         fprintf(stderr, "Unable to resolve ftp host\n");
+          log("Unable to resolve ftp host\n");
+          break;
+        case CURLE_COULDNT_CONNECT:
+--- 1225,1231 ----
+          log("Couldn't resolve proxy\n");
+          break;
+        case CURLE_COULDNT_RESOLVE_HOST:
+!         fprintf(stderr, "Unable to resolve ftp host (%s)\n", ftp_host);
+          log("Unable to resolve ftp host\n");
+          break;
+        case CURLE_COULDNT_CONNECT:
+***************
+*** 1064,1070 ****
+          break;
+      }
+    }
+! 
+    /* cleanup curl stuff */
+    if (!ftp_keepalive) {
+      curl_easy_cleanup(curl_handle);
+--- 1314,1324 ----
+          break;
+      }
+    }
+!   
+!   
+!   
+!   
+!   
+    /* cleanup curl stuff */
+    if (!ftp_keepalive) {
+      curl_easy_cleanup(curl_handle);
+***************
+*** 1073,1078 ****
+--- 1327,1333 ----
+      post_commands = NULL;
+    }
+    fclose(infile);
++   fclose(infile_thumb);
+  }
+  
+  int
+***************
+*** 1101,1110 ****
+  }
+  
+  int
+! do_upload(char *file)
+  {
+    struct stat st;
+    int upload_successful = 1;
+  
+    if (ftp_do) {
+      if ((upload_blockfile && (stat(upload_blockfile, &st) == -1))
+--- 1356,1366 ----
+  }
+  
+  int
+! do_upload(char *file, char *thumb_file)
+  {
+    struct stat st;
+    int upload_successful = 1;
++   
+  
+    if (ftp_do) {
+      if ((upload_blockfile && (stat(upload_blockfile, &st) == -1))
+***************
+*** 1121,1134 ****
+--- 1377,1436 ----
+    } else if (scp_target) {
+      char target_buf[2048];
+      char cmd_buf[4096];
++     char tmp_buf[4096];
+      char *scp_args[] = { "scp", "-BCq", NULL, NULL, NULL };
+      char *ssh_args[] = { "ssh", "-n", "-q", NULL, NULL, NULL };
++     int i = 0;
++       
++ 
+  
+      if (!upload_blockfile
+          || (upload_blockfile && (stat(upload_blockfile, &st) == -1))) {
+        log("uploading via scp\n");
+        snprintf(target_buf, sizeof(target_buf), "%s:%s/%s", scp_target,
+                 ftp_dir, ftp_tmp);
++       
++       if (remote_archive_active && remote_archive_total) {
++         log("archiving old shots\n");
++         for (i=remote_archive_total;i>0;i--) {
++           //if we've found the last shot exists, delete it
++           if (i == remote_archive_total ) {
++             snprintf(cmd_buf, sizeof(cmd_buf), "rm %s/%s-%i.%s;", ftp_dir, file_string,i, ext_string);
++             
++             ssh_args[3] = scp_target;
++             ssh_args[4] = cmd_buf;
++             if ((upload_successful = execvp_with_timeout(scp_timeout, "ssh", ssh_args))) {
++               log("removing oldest shot!\n");
++               log(strcat(cmd_buf,"\n"));
++             } //if up
++ 
++           } else  {
++             //else, rename webcam-9.jpg to webcam-10.jpg
++             snprintf(cmd_buf, sizeof(cmd_buf), "mv %s/%s-%i.%s %s/%s-%i.%s;", ftp_dir, file_string, i, ext_string, ftp_dir, file_string, i+1,ext_string);
++             
++             ssh_args[3] = scp_target;
++             ssh_args[4] = cmd_buf;
++             if ((upload_successful = execvp_with_timeout(scp_timeout, "ssh", ssh_args))) {
++               log("moving %i to %i\n",i,i+1);
++               log(strcat(cmd_buf,"\n"));
++             } //if up
++ 
++           } //if remote_archive_total
++       } //for  
++         
++         snprintf(cmd_buf, sizeof(cmd_buf), "mv %s/%s.%s %s/%s-%i.%s;", ftp_dir, file_string, ext_string, ftp_dir, file_string, i+1,ext_string);
++            
++         ssh_args[3] = scp_target;
++         ssh_args[4] = cmd_buf;
++         if ((upload_successful = execvp_with_timeout(scp_timeout, "ssh", ssh_args))) {
++           log("moving old to 1\n");
++           log(strcat(cmd_buf,"\n"));
++         } //if up
++         
++       } //if remote_archive_active
++       
++       
++       
+        snprintf(cmd_buf, sizeof(cmd_buf), "mv %s/%s %s/%s", ftp_dir, ftp_tmp,
+                 ftp_dir, ftp_file);
+        scp_args[2] = file;
+***************
+*** 1145,1154 ****
+              log("running post upload action\n");
+              system(action_post_upload);
+              log("post upload action done\n");
+!           }
+!         }
+!       }
+!     }
+    }
+    return upload_successful;
+  }
+--- 1447,1483 ----
+              log("running post upload action\n");
+              system(action_post_upload);
+              log("post upload action done\n");
+!           } //action_post_upload
+!         } //upload_success
+!       } //upload_sucess
+! 
+! 
+!       /* 2003.02.11 ben wilson (ben[at]thelocust[dot]org) */
+!       /* upload thumb, if thumb are to be uploaded */
+! 
+!       if (remote_thumbnail_create && remote_thumbnail_file) {
+!       snprintf(target_buf, sizeof(target_buf), "%s:%s/%s", scp_target,
+!                ftp_dir, ftp_tmp);
+!       snprintf(cmd_buf, sizeof(cmd_buf), "mv %s/%s %s/%s", ftp_dir, ftp_tmp,
+!                ftp_dir, remote_thumbnail_file);
+!       scp_args[2] = thumb_file;
+!       scp_args[3] = target_buf;
+!       if ((upload_successful =
+!            execvp_with_timeout(scp_timeout, "scp", scp_args))) {
+!         ssh_args[3] = scp_target;
+!         ssh_args[4] = cmd_buf;
+!         if ((upload_successful = execvp_with_timeout(scp_timeout, "ssh", ssh_args))) {
+!           log("thumb uploaded\n");
+!         } //upload_success
+!       } //upload_sucess
+!       } //remote_thumb
+! 
+!       /* end thumb upload */
+! 
+! 
+! 
+! 
+!     } //!upload blockfile
+    }
+    return upload_successful;
+  }
+***************
+*** 1375,1380 ****
+--- 1704,1741 ----
+      archive_thumbnails_width = i;
+    if (-1 != (i = cfg_get_int("grab", "archive_thumbnails_height")))
+      archive_thumbnails_height = i;
++ 
++   /* 2003.02.11 - ben wilson (ben[at]thelocust[dot]org) */
++   if (NULL != (val = cfg_get_str("grab", "remote_thumbnail_temp_file")))
++     remote_thumbnail_temp_file = val;
++   if (-1 != (i = cfg_get_int("grab", "remote_thumbnail_create")))
++     remote_thumbnail_create = i;
++   if (-1 != (i = cfg_get_int("grab", "remote_thumbnail_width")))
++     remote_thumbnail_width = i;
++   if (-1 != (i = cfg_get_int("grab", "remote_thumbnail_height")))
++     remote_thumbnail_height = i;
++   if (NULL != (val = cfg_get_str("grab", "remote_thumbnail_file")))
++     remote_thumbnail_file = val;    
++   if (NULL != (val = cfg_get_str("grab", "remote_thumbnail_offline_image")))
++     remote_thumbnail_offline_image = val;
++   if (-1 != (i = cfg_get_int("grab", "remote_archive_active")))
++     remote_archive_active = i;
++   if (-1 != (i = cfg_get_int("grab", "remote_archive_total")))
++     remote_archive_total = i;
++   
++   //sscanf(ftp_file,"%[^.].%s",file_string,ext_string);
++   
++   /* this breaks the ftp_filename into webcam and jpg, (if the file is named
++      webcam.jpg)  it will allow the use of webcam.home.jpg or whatever, too.. */
++   char buf[2][512];
++   memset (buf, 0, 2*512);
++   i = strlen (ftp_file);
++   while (ftp_file[i] != '.') i--;
++   strncpy (file_string, ftp_file, i);
++   strcpy (ext_string, ftp_file+i+1);
++   /*end ben*/
++     
++ 
+    if (-1 != (i = cfg_get_int("grab", "pwc_wb_red")))
+      pwc_wb_red = i;
+    if (-1 != (i = cfg_get_int("grab", "pwc_wb_blue")))
+***************
+*** 1499,1507 ****
+        add_time_text(image, get_message(), width, height);
+        save_image(image, temp_file);
+        do_postprocess(temp_file);
+        archive_jpeg(image);
+        gib_imlib_free_image_and_decache(image);
+!       upload_successful = do_upload(temp_file);
+        just_shot = 1;
+        time(&end_shot);
+      } else if (offline_image && !offline_done
+--- 1860,1873 ----
+        add_time_text(image, get_message(), width, height);
+        save_image(image, temp_file);
+        do_postprocess(temp_file);
++       /* 2003.02.11 ben wilson (ben[at]thelocust[dot]org */
++       create_thumbnail(image);
++ 
+        archive_jpeg(image);
+        gib_imlib_free_image_and_decache(image);
+!       upload_successful = do_upload(temp_file, remote_thumbnail_temp_file);
+!   
+! 
+        just_shot = 1;
+        time(&end_shot);
+      } else if (offline_image && !offline_done
+***************
+*** 1509,1515 ****
+                     || !upload_blockfile) && check_interface(watch_interface)) {
+        /* blockfile was just created */
+        log("uploading offline image\n");
+!       offline_done = do_upload(offline_image);
+        log("OFFLINE\n");
+      }
+      new_delay = grab_delay;
+--- 1875,1881 ----
+                     || !upload_blockfile) && check_interface(watch_interface)) {
+        /* blockfile was just created */
+        log("uploading offline image\n");
+!       offline_done = do_upload(offline_image, remote_thumbnail_offline_image);
+        log("OFFLINE\n");
+      }
+      new_delay = grab_delay;

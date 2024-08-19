@@ -1,0 +1,72 @@
+
+<h1>patches</h1>
+
+<h2><a href="http://www.rfxnetworks.com/sysbk.php" target="_blank">sysbk</a> w/ PostgreSQL support</h2>
+<h3>2004.03.04</h3>
+<p>based on <a href="http://www.rfxnetworks.com/sysbk.php">sysbk 1.0</a> by <a href="http://www.rfxnetworks.com">R-fx networks</a>.  added PostgreSQL backup support, as well as better support for MySQL, specifically the ability to specify the user that will be doing the dumping.</p>
+
+<p>Upgrading users will need to add the following to your conf.sysbk:</p>
+<pre style="font-size:9px;">
+MYSQL_USER=""
+POSTGRES_BK="0"                             # Enable/Disable postgresql backup operations [1=on,0=off]
+POSTGRES_PATH="/var/lib/pgsql"              # Installed location of postgresql [no trailing slash]
+POSTGRES_INIT="/etc/init.d/postgresql"      # Locationof PostgreSQL INIT script
+POSTGRES_PID="/var/run/postmaster.5432.pid" # Location of postgreSQL PID file
+POSTGRES_DUMP="/usr/bin/pg_dump"            # Path to the 'pg_dump' binary
+POSTGRES_USER=""                            # PostgreSQL user for dumps
+POSTGRES_ROOTPW=""                          # PostgreSQL user password
+</pre>
+
+
+<h3>Downloads</h3>
+<ul class="List">
+<li><a href="patches/files/sysbk-1.0-blw.patch.html">sysbk-1.0-blw.patch</a></li>
+  <ul>
+  <li>patch for sysbk 1.0 to add PostgreSQL and better MySQL support</li>
+  </ul>
+<li><a href="patches/files/sysbk-1.0-blw.tar.gz">sysbk-1.0-blw.tar.gz</a></li>
+  <ul>
+  <li>complete tarball</li>
+  </ul>
+</ul>
+
+<h2><a href="http://www.tjsi.com/rblsmtpd/">rblsmtpd-syslog</a> for RedHat9 / Plesk 6.0</h2>
+<h3>2004.01.19</h3>
+<ul class="List">
+<li><a href="patches/files/ucspi-tcp-0.88-rblsmtpd-syslog.tar.gz">ucspi-tcp-0.88-rblmstpd-syslog.tar.gz</a></li>
+  <ul>
+  <li>the ucpsi-tcp package with the RedHat errno patch AND the rblsmtpd-syslog modification. just "make rblsmtpd" to make the binary.</li>
+  </ul>
+<li><a href="patches/files/rblsmtpd-syslog-rh9.tar.gz">rblsmtpd-syslog-rh9.tar.gz</a></li>
+  <ul>
+  <li>rblsmtpd binary with syslog support for RedHat 9</li>
+  </ul>
+</ul>
+
+<h2><a href="http://linuxbrit.co.uk/camE/">camE</a> thumbnailing/archiving/scp patch</h2>
+<h3>2003.03.25</h3>
+<ul class="List">
+ <li><a href="patches/files/camE-1.4-blw-webcam.c.diff">camE-1.4-blw-webcam.c.diff</a></li>
+  <ul>
+  <li>patch for <a href="http://www.linuxbrit.co.uk/downloads/camE-1.4.tar.gz">1.4</a>camE v1.4</a> to add remote thumbnails/remote archiving. may work with 1.3 or earlier, not sure.</li>
+  </ul>
+</ul>
+
+<p>
+You&rsquo;ll need to add the following options to your ~/.camErc:
+<br>
+<br>
+#remote thumbnailing stuff
+remote_thumbnail_create = 1<br>
+remote_thumbnail_width = 176<br>
+remote_thumbnail_height = 144<br>
+remote_thumbnail_temp_file = /tmp/homewc-thumb.jpg<br>
+remote_thumbnail_file = homewc-thumb.jpg<br>
+remote_thumbnail_offline_image = /home/ben/.camE/blocked-thumb.jpg<br>
+<br>
+#remote archiving<br>
+remote_archive_active = 1<br>
+remote_archive_total = 10<br>
+
+</p>
+

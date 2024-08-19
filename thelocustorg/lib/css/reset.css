@@ -1,0 +1,74 @@
+/*	
+	/res/css/global.css
+	This file sets global styles like text behaviors, vertical and horiaontal margins here.
+	Also good for universal classes like link icons, PDF icons, generic floats, etc.
+	This file should not change much site to site.
+	Styles specific to site layout and design should be set in /lib/css/layout.css (style.css for WordPress)
+*/
+
+/* Copy */
+html {
+	font-size:100.01%; /* Oddly this makes different browsers display text more universally. */ 
+}
+body {
+	font: normal normal normal 1em/1.5 Verdana, sans-serif; /* These settings are a good staring point for readabilty. */
+	font-size: .75em;  /*Equivalant to 12px, but allows for text re-sizing in the browser. */
+}
+
+
+/* Headers */
+h1, h2, h3, h4, h5, h6 {font-weight: bold; line-height: 1; margin-bottom: 1.0em;}
+h1 {font-size: 2.0em;}
+h2 {font-size: 1.8em;}
+h3 {font-size: 1.6em;}
+h4 {font-size: 1.4em;}
+h5 {font-size: 1.2em;}
+h6 {font-size: 1.0em;}
+
+
+/* Lists */
+/* Set list behavior and left-margins */ 
+ol {
+	list-style-type: decimal;
+	margin-left: 1.9em;
+}
+ul {
+	list-style-type: disc;
+	margin-left: 1.3em;
+}
+ul.none {
+	list-style-type: none;
+	margin-left: 0;
+}	
+
+
+/* Links */
+/* Standard Links for body copy */
+a,
+a:active,
+a:visited,
+a:link {
+	color: #c60b46;
+	text-decoration: underline;
+}	
+
+a:hover {
+	text-decoration: none;
+}
+
+/* Elements with a vertical margin */
+/*h1, h2, h3, h4, h5, h6,*/
+p, pre,
+blockquote, ul, ol, dl, address {
+	margin-bottom: 1em;
+}
+
+/* Elements with a left margin */
+dd, blockquote {
+	margin-left: 1em;
+}
+
+em, i {font-style:italic;}
+strong, b {font-weight: bold;}
+.clear { clear: both } 
+
